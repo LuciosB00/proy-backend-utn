@@ -12,6 +12,31 @@ enum Role {
   ADMIN
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum QualificationState {
+  APPROVED
+  DESAPPROVED
+  REGULAR
+}
+
+enum RegistrationState {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
+enum FourMonth {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+}
+
 model User {
   id       String @id @default(uuid()) @db.Uuid
   email    String @unique
@@ -25,4 +50,90 @@ model User {
 
   @@index([id, email])
   @@map("users")
+}
+
+model Student {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  surname String
+  age Int
+  email String
+  password String
+  dni String
+  phone String
+  address String
+  registrationDate DateTime @default(now()) @db.Timestamptz(3)
+  registrationState RegistrationState @default(PENDING)
+  registration Registrations[]
+  qualifications Qualifications[]
+  attendances Attendances[]
+  courses Courses[]
+  carrers Carrers[]
+}
+
+model Teacher {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  surname String
+  age Int
+  email String
+  password String
+  dni String
+  phone String
+  address String
+  registrationDate DateTime @default(now()) @db.Timestamptz(3)
+  registrationState RegistrationState @default(PENDING)
+  qualifications Qualifications[]
+  attendances Attendances[]
+  courses Courses[]
+}
+
+model Registration {
+  id String @id @default(uuid()) @db.Uuid
+  age Int
+  registrationDate DateTime @default(now()) @db.Timestamptz(3)
+  registrationState RegistrationState @default(PENDING)
+  student Student @relation(fields: [studentId], references: [id])
+  studentId String
+  course Course @relation(fields: [courseId], references: [id])
+  courseId String
+  carrer Carrer @relation(fields: [carrerId], references: [id])
+  carrerId String
+}
+
+model Qualification {
+  id String @id @default(uuid()) @db.Uuid
+  year Int
+  qualificationDate DateTime @default(now()) @db.Timestamptz(3)
+  qualificationState QualificationState @default(REGULAR)
+  student Student @relation(fields: [studentId], references: [id])
+  studentId String
+  course Course @relation(fields: [courseId], references: [id])
+  courseId String
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  teacherId String
+}
+
+model Attendance {
+  id String @id @default(uuid()) @db.Uuid
+  day DateTime @default(now()) @db.Timestamptz(3)
+  status AttendanceStatus @default(PRESENT)
+  student Student @relation(fields: [studentId], references: [id])
+  studentId String
+  course Course @relation(fields: [courseId], references: [id])
+  courseId String
+}
+
+model Course {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  year Int
+
+}
+
+model Career {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  title String
+
 }
