@@ -7,61 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Rol {
-    ESTUDIANTE
-    DOCENTE
-    ADMIN
+enum Role {
+  USER
+  ADMIN
 }
 
-model Usuario {
-    id        Int      @id @default(autoincrement())
-    nombre    String
-    email     String   @unique
-    password  String
-    rol       Rol
-    cursosDocente Curso[] @relation("DocenteCursos")
-    inscripciones Inscripcion[]
-    asistencia Asistencia[]
-    calificacion Calificacion[]
-}
+model User {
+  id       String @id @default(uuid()) @db.Uuid
+  email    String @unique
+  fullName String
+  password String
+  role     Role   @default(USER)
 
-model Curso {
-    id        Int      @id @default(autoincrement())
-    titulo    String
-    descripcion String?
-    docenteId Int
-    docente   Usuario  @relation("DocenteCursos", fields: [docenteId], references: [id])
-    inscripciones Inscripcion[]
-    asistencias   Asistencia[]
-    calificaciones Calificacion[]
-}
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
 
-model Inscripcion {
-    id           Int      @id @default(autoincrement())
-    estudianteId Int
-    cursoId      Int
-    estado       String
-    estudiante   Usuario  @relation(fields: [estudianteId], references: [id])
-    curso        Curso    @relation(fields: [cursoId], references: [id])
-}
-
-model Asistencia {
-    id           Int      @id @default(autoincrement())
-    fecha        DateTime
-    presente     Boolean
-    estudianteId Int
-    cursoId      Int
-    estudiante   Usuario  @relation(fields: [estudianteId], references: [id])
-    curso        Curso    @relation(fields: [cursoId], references: [id])
-}
-
-model Calificacion {
-    id           Int      @id @default(autoincrement())
-    nota         Float
-    tipo         String
-    fecha        DateTime
-    estudianteId Int
-    cursoId      Int
-    estudiante   Usuario  @relation(fields: [estudianteId], references: [id])
-    curso        Curso    @relation(fields: [cursoId], references: [id])
+  @@index([id, email])
+  @@map("users")
 }
