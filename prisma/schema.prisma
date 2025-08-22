@@ -53,87 +53,108 @@ model User {
 }
 
 model Student {
-  id String @id @default(uuid()) @db.Uuid
-  name String
-  surname String
-  age Int
-  email String
-  password String
-  dni String
-  phone String
-  address String
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  surname   String
+  age       Int
+  email     String
+  password  String
+  dni       String
+  phone     String
+  address   String
   registrationDate DateTime @default(now()) @db.Timestamptz(3)
   registrationState RegistrationState @default(PENDING)
-  registration Registrations[]
-  qualifications Qualifications[]
-  attendances Attendances[]
-  courses Courses[]
-  carrers Carrers[]
+
+  registrations   Registration[]
+  qualifications  Qualification[]
+  attendances     Attendance[]
+  courses         Course[]   @relation("StudentCourses")
+  careers         Career[]   @relation("StudentCareers")
 }
 
 model Teacher {
-  id String @id @default(uuid()) @db.Uuid
-  name String
-  surname String
-  age Int
-  email String
-  password String
-  dni String
-  phone String
-  address String
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  surname   String
+  age       Int
+  email     String
+  password  String
+  dni       String
+  phone     String
+  address   String
   registrationDate DateTime @default(now()) @db.Timestamptz(3)
   registrationState RegistrationState @default(PENDING)
-  qualifications Qualifications[]
-  attendances Attendances[]
-  courses Courses[]
+
+  qualifications Qualification[]
+  courses        Course[]   @relation("TeacherCourses")
 }
 
 model Registration {
-  id String @id @default(uuid()) @db.Uuid
-  age Int
+  id        String   @id @default(uuid()) @db.Uuid
+  age       Int
   registrationDate DateTime @default(now()) @db.Timestamptz(3)
   registrationState RegistrationState @default(PENDING)
-  student Student @relation(fields: [studentId], references: [id])
+
+  student   Student @relation(fields: [studentId], references: [id])
   studentId String
-  course Course @relation(fields: [courseId], references: [id])
-  courseId String
-  carrer Carrer @relation(fields: [carrerId], references: [id])
-  carrerId String
+
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  String
+
+  career    Career  @relation(fields: [careerId], references: [id])
+  careerId  String
 }
 
 model Qualification {
-  id String @id @default(uuid()) @db.Uuid
-  year Int
+  id        String   @id @default(uuid()) @db.Uuid
+  year      Int
   qualificationDate DateTime @default(now()) @db.Timestamptz(3)
   qualificationState QualificationState @default(REGULAR)
-  student Student @relation(fields: [studentId], references: [id])
+
+  student   Student @relation(fields: [studentId], references: [id])
   studentId String
-  course Course @relation(fields: [courseId], references: [id])
-  courseId String
-  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  String
+
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
   teacherId String
 }
 
 model Attendance {
-  id String @id @default(uuid()) @db.Uuid
-  day DateTime @default(now()) @db.Timestamptz(3)
-  status AttendanceStatus @default(PRESENT)
-  student Student @relation(fields: [studentId], references: [id])
+  id        String   @id @default(uuid()) @db.Uuid
+  day       DateTime @default(now()) @db.Timestamptz(3)
+  status    AttendanceStatus @default(PRESENT)
+
+  student   Student @relation(fields: [studentId], references: [id])
   studentId String
-  course Course @relation(fields: [courseId], references: [id])
-  courseId String
+
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  String
 }
 
 model Course {
-  id String @id @default(uuid()) @db.Uuid
-  name String
-  year Int
+  id    String   @id @default(uuid()) @db.Uuid
+  name  String
+  year  Int
+  fourMonth FourMonth
 
+  registrations  Registration[]
+  qualifications Qualification[]
+  attendances    Attendance[]
+  students       Student[] @relation("StudentCourses")
+  teachers       Teacher[] @relation("TeacherCourses")
+  careers        Career[]  @relation("CourseCareers")
 }
 
 model Career {
-  id String @id @default(uuid()) @db.Uuid
-  name String
+  id    String   @id @default(uuid()) @db.Uuid
+  name  String
   title String
 
+  registrations Registration[]
+  students      Student[] @relation("StudentCareers")
+  courses       Course[]  @relation("CourseCareers")
 }
+
+
