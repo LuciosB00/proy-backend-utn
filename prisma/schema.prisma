@@ -8,8 +8,9 @@ datasource db {
 }
 
 enum Role {
-  USER
   ADMIN
+  STUDENT
+  TEACHER
 }
 
 enum AttendanceStatus {
@@ -30,6 +31,12 @@ enum RegistrationState {
   PENDING
 }
 
+enum CourseState {
+  PROMOTED
+  REGULAR
+  DEMOTED
+}
+
 enum FourMonth {
   FIRST
   SECOND
@@ -42,11 +49,15 @@ model User {
   email    String @unique
   fullName String
   password String
-  role     Role   @default(USER)
+  role     Role   @default(STUDENT)
 
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)
   deletedAt DateTime? @db.Timestamptz(3)
+
+  student Student?
+  teacher Teacher?
+
 
   @@index([id, email])
   @@map("users")
@@ -54,18 +65,22 @@ model User {
 
 model Student {
   id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  surname   String
   age       Int
-  email     String
-  password  String
   dni       String
   phone     String
   address   String
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  user      User @relation(fields: [userId], references: [id])
+  userId    String @unique
+  
   registrationDate DateTime @default(now()) @db.Timestamptz(3)
   registrationState RegistrationState @default(PENDING)
 
-  registrations   Registration[]
+  registrations   Matriculation[]
   qualifications  Qualification[]
   attendances     Attendance[]
   courses         Course[]   @relation("StudentCourses")
@@ -74,57 +89,67 @@ model Student {
 
 model Teacher {
   id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  surname   String
   age       Int
-  email     String
-  password  String
   dni       String
   phone     String
   address   String
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  user      User @relation(fields: [userId], references: [id])
+  userId    String @unique
+
   registrationDate DateTime @default(now()) @db.Timestamptz(3)
   registrationState RegistrationState @default(PENDING)
 
-  qualifications Qualification[]
   courses        Course[]   @relation("TeacherCourses")
 }
 
-model Registration {
+model Matriculation {
   id        String   @id @default(uuid()) @db.Uuid
-  age       Int
-  registrationDate DateTime @default(now()) @db.Timestamptz(3)
-  registrationState RegistrationState @default(PENDING)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  matriculateDate DateTime @default(now()) @db.Timestamptz(3)
+  matriculateState QualificationState @default(REGULAR)
 
   student   Student @relation(fields: [studentId], references: [id])
   studentId String
 
   course    Course  @relation(fields: [courseId], references: [id])
   courseId  String
-
-  career    Career  @relation(fields: [careerId], references: [id])
-  careerId  String
 }
 
 model Qualification {
   id        String   @id @default(uuid()) @db.Uuid
-  year      Int
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
   qualificationDate DateTime @default(now()) @db.Timestamptz(3)
   qualificationState QualificationState @default(REGULAR)
 
-  student   Student @relation(fields: [studentId], references: [id])
+  student   Student @relation(fields: [studentId], references: [id]) //array
   studentId String
 
-  course    Course  @relation(fields: [courseId], references: [id])
+  course    Course  @relation(fields: [courseId], references: [id]) //array
   courseId  String
-
-  teacher   Teacher @relation(fields: [teacherId], references: [id])
-  teacherId String
 }
 
 model Attendance {
   id        String   @id @default(uuid()) @db.Uuid
-  day       DateTime @default(now()) @db.Timestamptz(3)
-  status    AttendanceStatus @default(PRESENT)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  attendanceDate     DateTime @default(now()) @db.Timestamptz(3)
+  attendanceState    AttendanceStatus @default(PRESENT)
 
   student   Student @relation(fields: [studentId], references: [id])
   studentId String
@@ -134,27 +159,37 @@ model Attendance {
 }
 
 model Course {
-  id    String   @id @default(uuid()) @db.Uuid
-  name  String
-  year  Int
+  id       String   @id @default(uuid()) @db.Uuid
+  name     String
+  year     Int
   fourMonth FourMonth
 
-  registrations  Registration[]
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  career    Career  @relation(fields: [careerId], references: [id])
+  careerId  String
+
+  registrations  Matriculation[]
   qualifications Qualification[]
   attendances    Attendance[]
   students       Student[] @relation("StudentCourses")
   teachers       Teacher[] @relation("TeacherCourses")
-  careers        Career[]  @relation("CourseCareers")
 }
 
 model Career {
-  id    String   @id @default(uuid()) @db.Uuid
-  name  String
-  title String
+  id       String   @id @default(uuid()) @db.Uuid
+  name     String
+  title    String
 
-  registrations Registration[]
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  courses       Course[]
   students      Student[] @relation("StudentCareers")
-  courses       Course[]  @relation("CourseCareers")
 }
+
 
 
