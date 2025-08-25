@@ -74,7 +74,7 @@ model Student {
   deletedAt DateTime? @db.Timestamptz(3)
 
   user      User @relation(fields: [userId], references: [id])
-  userId    String @unique
+  userId    String @unique @db.Uuid
   
   registrationState RegistrationState @default(PENDING)
 
@@ -87,6 +87,7 @@ model Student {
   @@index([id, dni])
   @@map("students")
 }
+
 
 model Teacher {
   id        String   @id @default(uuid()) @db.Uuid
@@ -118,10 +119,10 @@ model Matriculation {
   courseState       CourseState?
 
   student   Student @relation(fields: [studentId], references: [id])
-  studentId String
+  studentId String  @db.Uuid
 
   course    Course  @relation(fields: [courseId], references: [id])
-  courseId  String
+  courseId  String  @db.Uuid
 
   @@map("matriculations")
 }
@@ -137,10 +138,10 @@ model Qualification {
   qualificationState QualificationState @default(REGULAR)
 
   student   Student @relation(fields: [studentId], references: [id])
-  studentId String
+  studentId String  @db.Uuid
 
   course    Course  @relation(fields: [courseId], references: [id])
-  courseId  String
+  courseId  String  @db.Uuid
 
   @@map("qualifications")
 }
@@ -156,10 +157,10 @@ model Attendance {
   attendanceState    AttendanceStatus @default(PRESENT)
 
   student   Student @relation(fields: [studentId], references: [id])
-  studentId String
+  studentId String  @db.Uuid
 
   course    Course  @relation(fields: [courseId], references: [id])
-  courseId  String
+  courseId  String  @db.Uuid
 
   @@map("attendances")
 }
@@ -175,7 +176,7 @@ model Course {
   deletedAt DateTime? @db.Timestamptz(3)
 
   career    Career  @relation(fields: [careerId], references: [id])
-  careerId  String
+  careerId  String  @db.Uuid
 
   matriculations  Matriculation[]
   qualifications  Qualification[]
