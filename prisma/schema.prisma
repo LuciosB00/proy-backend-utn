@@ -58,7 +58,6 @@ model User {
   student Student?
   teacher Teacher?
 
-
   @@index([id, email])
   @@map("users")
 }
@@ -66,7 +65,7 @@ model User {
 model Student {
   id        String   @id @default(uuid()) @db.Uuid
   age       Int
-  dni       String
+  dni       String   @unique
   phone     String
   address   String
 
@@ -79,7 +78,7 @@ model Student {
   
   registrationState RegistrationState @default(PENDING)
 
-  registrations   Matriculation[]
+  matriculations  Matriculation[]
   qualifications  Qualification[]
   attendances     Attendance[]
   courses         Course[]   @relation("StudentCourses")
@@ -92,7 +91,7 @@ model Student {
 model Teacher {
   id        String   @id @default(uuid()) @db.Uuid
   age       Int
-  dni       String
+  dni       String   @unique
   phone     String
   address   String
 
@@ -103,10 +102,7 @@ model Teacher {
   user      User @relation(fields: [userId], references: [id])
   userId    String @unique
 
-  registrationDate DateTime @default(now()) @db.Timestamptz(3)
-  registrationState RegistrationState @default(PENDING)
-
-  courses        Course[]   @relation("TeacherCourses")
+  courses   Course[]   @relation("TeacherCourses")
 
   @@map("teachers")
 }
@@ -118,7 +114,8 @@ model Matriculation {
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)
   deletedAt DateTime? @db.Timestamptz(3)
 
-  matriculateState QualificationState @default(REGULAR)
+  registrationState RegistrationState @default(PENDING)
+  courseState       CourseState? // Estado final del curso (opcional)
 
   student   Student @relation(fields: [studentId], references: [id])
   studentId String
@@ -139,10 +136,10 @@ model Qualification {
   qualificationDate DateTime @default(now()) @db.Timestamptz(3)
   qualificationState QualificationState @default(REGULAR)
 
-  student   Student @relation(fields: [studentId], references: [id]) //array
+  student   Student @relation(fields: [studentId], references: [id])
   studentId String
 
-  course    Course  @relation(fields: [courseId], references: [id]) //array
+  course    Course  @relation(fields: [courseId], references: [id])
   courseId  String
 
   @@map("qualifications")
@@ -180,11 +177,11 @@ model Course {
   career    Career  @relation(fields: [careerId], references: [id])
   careerId  String
 
-  registrations  Matriculation[]
-  qualifications Qualification[]
-  attendances    Attendance[]
-  students       Student[] @relation("StudentCourses")
-  teachers       Teacher[] @relation("TeacherCourses")
+  matriculations  Matriculation[]
+  qualifications  Qualification[]
+  attendances     Attendance[]
+  students        Student[] @relation("StudentCourses")
+  teachers        Teacher[] @relation("TeacherCourses")
 
   @@map("courses")
 }
@@ -198,11 +195,8 @@ model Career {
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)
   deletedAt DateTime? @db.Timestamptz(3)
 
-  courses       Course[]
-  students      Student[] @relation("StudentCareers")
+  courses  Course[]
+  students Student[] @relation("StudentCareers")
 
   @@map("careers")
 }
-
-
-
