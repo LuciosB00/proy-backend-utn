@@ -115,7 +115,7 @@ model Matriculation {
   deletedAt DateTime? @db.Timestamptz(3)
 
   registrationState RegistrationState @default(PENDING)
-  courseState       CourseState? // Estado final del curso (opcional)
+  courseState       CourseState?
 
   student   Student @relation(fields: [studentId], references: [id])
   studentId String
