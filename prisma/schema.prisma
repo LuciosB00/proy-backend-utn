@@ -101,13 +101,13 @@ model Teacher {
   deletedAt DateTime? @db.Timestamptz(3)
 
   user      User @relation(fields: [userId], references: [id])
-  userId    String @unique
+  userId    String @unique @db.Uuid
 
   courses   Course[]   @relation("TeacherCourses")
 
-  @@index([id, dni])
   @@map("teachers")
 }
+
 
 model Matriculation {
   id        String   @id @default(uuid()) @db.Uuid
