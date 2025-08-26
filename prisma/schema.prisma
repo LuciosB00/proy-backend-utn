@@ -105,6 +105,7 @@ model Teacher {
 
   courses   Course[]   @relation("TeacherCourses")
 
+  @@index([id, dni])
   @@map("teachers")
 }
 
