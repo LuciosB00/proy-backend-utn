@@ -28,7 +28,7 @@ export class AuthController {
   }
 
   @Get('private')
-  @Auth(Role.USER, Role.ADMIN)
+  @Auth(Role.STUDENT, Role.TEACHER)
   testingPrivateRoute2(@GetUser() user: Partial<UserModel>) {
     return { user };
   }
