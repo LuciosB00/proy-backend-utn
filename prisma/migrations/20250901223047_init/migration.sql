@@ -5,13 +5,10 @@ CREATE TYPE "public"."Role" AS ENUM ('ADMIN', 'STUDENT', 'TEACHER');
 CREATE TYPE "public"."AttendanceStatus" AS ENUM ('PRESENT', 'ABSENT', 'LATE');
 
 -- CreateEnum
-CREATE TYPE "public"."QualificationState" AS ENUM ('APPROVED', 'DESAPPROVED', 'REGULAR');
-
--- CreateEnum
 CREATE TYPE "public"."RegistrationState" AS ENUM ('APPROVED', 'REJECTED', 'PENDING');
 
 -- CreateEnum
-CREATE TYPE "public"."CourseState" AS ENUM ('PROMOTED', 'REGULAR', 'DEMOTED');
+CREATE TYPE "public"."CourseState" AS ENUM ('PROMOTED', 'REGULAR', 'FREE');
 
 -- CreateEnum
 CREATE TYPE "public"."FourMonth" AS ENUM ('FIRST', 'SECOND', 'THIRD', 'FOURTH');
@@ -33,10 +30,10 @@ CREATE TABLE "public"."users" (
 -- CreateTable
 CREATE TABLE "public"."students" (
     "id" UUID NOT NULL,
-    "age" INTEGER NOT NULL,
-    "dni" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
+    "dateBirth" TIMESTAMPTZ(3),
+    "dni" TEXT,
+    "phone" VARCHAR(20),
+    "address" VARCHAR(50),
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3),
     "deletedAt" TIMESTAMPTZ(3),
@@ -49,10 +46,10 @@ CREATE TABLE "public"."students" (
 -- CreateTable
 CREATE TABLE "public"."teachers" (
     "id" UUID NOT NULL,
-    "age" INTEGER NOT NULL,
+    "dateBirth" TIMESTAMPTZ(3),
     "dni" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
+    "phone" VARCHAR(20),
+    "address" VARCHAR(50),
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3),
     "deletedAt" TIMESTAMPTZ(3),
@@ -78,15 +75,28 @@ CREATE TABLE "public"."matriculations" (
 -- CreateTable
 CREATE TABLE "public"."qualifications" (
     "id" UUID NOT NULL,
+    "note" DECIMAL(2,2) NOT NULL,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3),
     "deletedAt" TIMESTAMPTZ(3),
     "qualificationDate" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "qualificationState" "public"."QualificationState" NOT NULL DEFAULT 'REGULAR',
+    "qualificationStateId" UUID NOT NULL,
     "studentId" UUID NOT NULL,
     "courseId" UUID NOT NULL,
 
     CONSTRAINT "qualifications_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."qualification_states" (
+    "id" UUID NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+    "note" DECIMAL(2,2) NOT NULL,
+    "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(3),
+    "deletedAt" TIMESTAMPTZ(3),
+
+    CONSTRAINT "qualification_states_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -106,7 +116,7 @@ CREATE TABLE "public"."attendances" (
 -- CreateTable
 CREATE TABLE "public"."courses" (
     "id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
     "year" INTEGER NOT NULL,
     "fourMonth" "public"."FourMonth" NOT NULL,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -120,13 +130,22 @@ CREATE TABLE "public"."courses" (
 -- CreateTable
 CREATE TABLE "public"."careers" (
     "id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
+    "name" VARCHAR(200) NOT NULL,
+    "title" VARCHAR(200) NOT NULL,
+    "description" VARCHAR(1000) NOT NULL,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3),
     "deletedAt" TIMESTAMPTZ(3),
 
     CONSTRAINT "careers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_QualificationStateToQualification" (
+    "A" UUID NOT NULL,
+    "B" UUID NOT NULL,
+
+    CONSTRAINT "_QualificationStateToQualification_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
@@ -175,6 +194,30 @@ CREATE UNIQUE INDEX "teachers_dni_key" ON "public"."teachers"("dni");
 CREATE UNIQUE INDEX "teachers_userId_key" ON "public"."teachers"("userId");
 
 -- CreateIndex
+CREATE INDEX "teachers_id_idx" ON "public"."teachers"("id");
+
+-- CreateIndex
+CREATE INDEX "matriculations_id_idx" ON "public"."matriculations"("id");
+
+-- CreateIndex
+CREATE INDEX "qualifications_id_idx" ON "public"."qualifications"("id");
+
+-- CreateIndex
+CREATE INDEX "qualification_states_id_idx" ON "public"."qualification_states"("id");
+
+-- CreateIndex
+CREATE INDEX "attendances_id_idx" ON "public"."attendances"("id");
+
+-- CreateIndex
+CREATE INDEX "courses_id_year_fourMonth_idx" ON "public"."courses"("id", "year", "fourMonth");
+
+-- CreateIndex
+CREATE INDEX "careers_id_idx" ON "public"."careers"("id");
+
+-- CreateIndex
+CREATE INDEX "_QualificationStateToQualification_B_index" ON "public"."_QualificationStateToQualification"("B");
+
+-- CreateIndex
 CREATE INDEX "_StudentCourses_B_index" ON "public"."_StudentCourses"("B");
 
 -- CreateIndex
@@ -196,6 +239,9 @@ ALTER TABLE "public"."matriculations" ADD CONSTRAINT "matriculations_studentId_f
 ALTER TABLE "public"."matriculations" ADD CONSTRAINT "matriculations_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "public"."courses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "public"."qualifications" ADD CONSTRAINT "qualifications_qualificationStateId_fkey" FOREIGN KEY ("qualificationStateId") REFERENCES "public"."qualification_states"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."qualifications" ADD CONSTRAINT "qualifications_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "public"."students"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -209,6 +255,12 @@ ALTER TABLE "public"."attendances" ADD CONSTRAINT "attendances_courseId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "public"."courses" ADD CONSTRAINT "courses_careerId_fkey" FOREIGN KEY ("careerId") REFERENCES "public"."careers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_QualificationStateToQualification" ADD CONSTRAINT "_QualificationStateToQualification_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."qualifications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_QualificationStateToQualification" ADD CONSTRAINT "_QualificationStateToQualification_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."qualification_states"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_StudentCourses" ADD CONSTRAINT "_StudentCourses_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."courses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
