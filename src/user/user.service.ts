@@ -31,7 +31,15 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     try {
+      const { email, password } = createUserDto;
 
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
+      if (createUserDto.password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
 
       
 

@@ -1,23 +1,26 @@
 import { Transform } from "class-transformer";
-import { IsDate, IsEnum, IsString, IsUUID, Length, ValidateIf } from "class-validator";
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
 
 export class CreateTeacherDto {
     @IsUUID()
-    userId: String;
+    userId: string;
 
+    @IsOptional()
     @IsDate()
-    dateBirth: Date;
+    dateBirth?: Date;
 
-    @IsString()
+    @IsNumber()
     @Length(8, 8)
     @ValidateIf((value) => value!== null)
-    dni: string;
+    dni: number;
 
+    @IsOptional()
     @IsString()
     @Length(10, 11)
-    phone: string;
+    phone?: string;
 
+    @IsOptional()
     @IsString()
     @Length(10, 11)
-    address: string; 
+    address?: string; 
 }

@@ -1,6 +1,6 @@
 import { RegistrationState } from "@prisma/client";
 import { Transform } from "class-transformer";
-import { IsDate, IsEnum, IsString, IsUUID, Length, ValidateIf } from "class-validator";
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
 
 
 export class CreateStudentDto {
@@ -8,21 +8,25 @@ export class CreateStudentDto {
     userId: string;
 
     @IsDate()
-    dateBirth: Date;
+    @IsOptional()
+    dateBirth?: Date;
 
-    @IsString()
+    @IsNumber()
     @Length(8, 8)
     @ValidateIf((value) => value !== null)
-    dni: string;
+    dni: number;
 
     @IsString()
     @Length(10, 11)
-    phone: string;
+    @IsOptional()
+    phone?: string;
 
     @IsString()
     @Length(10, 11)
-    address: string;
+    @IsOptional()
+    address?: string;
 
+    @IsOptional()
     @IsEnum(RegistrationState)
-    registrationSate: RegistrationState
+    registrationSate?: RegistrationState
 }
