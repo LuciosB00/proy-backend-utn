@@ -68,15 +68,15 @@ export class AuthService {
         });
 
         if (role == Role.STUDENT) {
-          await this.studentService.create({ userId: user.id, dni });
+          await this.studentService.create({ userId: user.id, dni }, tx);
         } else if (role == Role.TEACHER) {
-          await this.teacherService.create({ userId: user.id, dni });
+          await this.teacherService.create({ userId: user.id, dni }, tx);
         }
-
+        
       });
 
       return {
-        ...user,
+        message: 'User registered successfully'
       };
     }
     catch (error) {

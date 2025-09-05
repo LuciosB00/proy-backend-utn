@@ -3,13 +3,16 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StudentService {
-  constructor(private readonly prisma: PrismaService, private readonly userService: UserService) { }
+  constructor(private readonly prismaService: PrismaService, private readonly userService: UserService) { }
 
-  async create(createStudentDto: CreateStudentDto) {
+  async create(createStudentDto: CreateStudentDto, tx?: Prisma.TransactionClient) {
     try {
+      const prisma = tx || this.prismaService;
+
       const exists = this.userService.findOne(createStudentDto.userId);
 
       if (!exists) {
@@ -18,7 +21,7 @@ export class StudentService {
 
       const { dni, phone, address } = createStudentDto;
 
-      const existingStudent = await this.prisma.student.findUnique({
+      const existingStudent = await prisma.student.findUnique({
         where: { dni },
       });
 
@@ -26,7 +29,7 @@ export class StudentService {
         throw new BadRequestException('Student with this DNI already exists');
       }
 
-      return await this.prisma.student.create({
+      return await prisma.student.create({
         data: {
           ...createStudentDto,
           phone: phone,
@@ -39,11 +42,11 @@ export class StudentService {
   }
 
   async findAll() {
-    return await this.prisma.student.findMany();
+    return await this.prismaService.student.findMany();
   }
 
   async findOne(id: string) {
-    const student = await this.prisma.student.findUnique({
+    const student = await this.prismaService.student.findUnique({
       where: { id, deletedAt: null },
     });
     if (!student) {
@@ -54,7 +57,7 @@ export class StudentService {
 
   async update(id: string, updateStudentDto: UpdateStudentDto) {
     try {
-      const updatedStudent = await this.prisma.student.update({
+      const updatedStudent = await this.prismaService.student.update({
         where: { id },
         data: updateStudentDto,
       });
@@ -66,7 +69,7 @@ export class StudentService {
 
   async remove(id: string) {
     try {
-      await this.prisma.student.delete({ where: { id } });
+      await this.prismaService.student.delete({ where: { id } });
       return { message: `Student #${id} deleted successfully` };
     } catch (error) {
       throw new BadRequestException(`Error deleting student: ${error.message}`);
