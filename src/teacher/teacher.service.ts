@@ -13,7 +13,7 @@ export class TeacherService {
     try {
       const prisma = tx || this.prismaService;
 
-      const exists = this.userService.findOne(createTeacherDto.userId);
+      const exists = await this.userService.findOne(createTeacherDto.userId);
 
       if (!exists) {
         throw new BadRequestException('User not found');
