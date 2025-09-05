@@ -24,11 +24,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly studentService: StudentService,
     private readonly teacherService: TeacherService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     try {
-      const { email, password, fullName, role, dni }  = registerDto;
+      const { email, password, fullName, role, dni } = registerDto;
 
       if (!role || role == Role.ADMIN) {
         throw new BadRequestException('Role is required / Role is invalid');
@@ -50,26 +50,30 @@ export class AuthService {
 
       const hashedPassword = bcrypt.hashSync(password, 10);
 
-      const user = await this.prismaService.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          fullName,
-          role,
-        },
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true,
-        },
-      });
+      this.prismaService.$transaction(async (tx) => {
 
-      if (role == Role.STUDENT) {
-        await this.studentService.create({userId: user.id, dni});
-      }else if (role == Role.TEACHER) {
-        await this.teacherService.create({userId: user.id, dni});
-      }
+        const user = await tx.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            fullName,
+            role,
+          },
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        });
+
+        if (role == Role.STUDENT) {
+          await this.studentService.create({ userId: user.id, dni });
+        } else if (role == Role.TEACHER) {
+          await this.teacherService.create({ userId: user.id, dni });
+        }
+
+      });
 
       return {
         ...user,
@@ -150,17 +154,17 @@ export class AuthService {
     return token;
   }
 
-  resetPassword() {}
+  resetPassword() { }
 
-  forgotPassword() {}
+  forgotPassword() { }
 
-  changePassword() {}
+  changePassword() { }
 
-  validateUser() {}
+  validateUser() { }
 
-  validateToken() {}
+  validateToken() { }
 
-  sendEmail() {}
+  sendEmail() { }
 
   private handleDbExceptions(error: any): never {
     if (error?.status === HttpStatus.UNAUTHORIZED) {

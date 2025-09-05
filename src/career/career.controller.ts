@@ -3,6 +3,7 @@ import { CareerService } from './career.service';
 import { CreateCareerDto } from './dto/create-career.dto';
 import { UpdateCareerDto } from './dto/update-career.dto';
 
+//@Auth('CAREER')
 @Controller('career')
 export class CareerController {
   constructor(private readonly careerService: CareerService) {}
