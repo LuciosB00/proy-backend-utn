@@ -2,7 +2,7 @@ import { IsOptional, IsString, Length } from "class-validator";
 
 export class CreateCareerDto {
     @IsString()
-    @Length(200, 500)
+    @Length(5, 50)
     name: string;
 
     @IsOptional()
@@ -10,7 +10,7 @@ export class CreateCareerDto {
     description?: string;
 
     @IsString()
-    @Length(200, 500)
+    @Length(5, 50)
     title: string;
 
 }
