@@ -5,7 +5,8 @@ import { AuthModule } from 'src/auth/auth.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
-  controllers: [CareerController, AuthModule],
+  imports: [AuthModule],
+  controllers: [CareerController],
   providers: [CareerService, PrismaService],
 })
 export class CareerModule {}
