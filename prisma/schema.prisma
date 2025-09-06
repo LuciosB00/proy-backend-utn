@@ -1,5 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  previewFeatures = ["driverAdapters", "queryCompiler"]
+  runtime         = "bun"
 }
 
 datasource db {
@@ -57,9 +60,9 @@ model User {
 }
 
 model Student {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
   dateBirth DateTime? @db.Timestamptz(3)
-  dni       Int   @unique
+  dni       Int       @unique
   phone     String?   @db.VarChar(20)
   address   String?   @db.VarChar(50)
 
@@ -83,9 +86,9 @@ model Student {
 }
 
 model Teacher {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
   dateBirth DateTime? @db.Timestamptz(3)
-  dni       Int   @unique
+  dni       Int       @unique
   phone     String?   @db.VarChar(20)
   address   String?   @db.VarChar(50)
 
@@ -123,17 +126,17 @@ model Matriculation {
 }
 
 model Qualification {
-  id String @id @default(uuid()) @db.Uuid
+  id   String  @id @default(uuid()) @db.Uuid
   note Decimal @db.Decimal(2, 2)
 
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)
   deletedAt DateTime? @db.Timestamptz(3)
 
-  qualificationDate  DateTime @default(now()) @db.Timestamptz(3)
+  qualificationDate DateTime @default(now()) @db.Timestamptz(3)
 
-  qualificationState QualificationState @relation(fields: [qualificationStateId], references: [id])
-  qualificationStateId String @db.Uuid
+  qualificationState   QualificationState @relation(fields: [qualificationStateId], references: [id])
+  qualificationStateId String             @db.Uuid
 
   QualificationState QualificationState[] @relation("QualificationStateToQualification")
 
@@ -148,8 +151,8 @@ model Qualification {
 }
 
 model QualificationState {
-  id String @id @default(uuid()) @db.Uuid
-  name String @db.VarChar(100)
+  id   String  @id @default(uuid()) @db.Uuid
+  name String  @db.VarChar(100)
   note Decimal @db.Decimal(2, 2)
 
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
@@ -157,10 +160,10 @@ model QualificationState {
   deletedAt DateTime? @db.Timestamptz(3)
 
   qualifications Qualification[] @relation("QualificationStateToQualification")
-  
+  Qualification  Qualification[]
+
   @@index([id])
   @@map("qualification_states")
-  Qualification Qualification[]
 }
 
 model Attendance {
@@ -207,11 +210,10 @@ model Course {
 }
 
 model Career {
-  id    String @id @default(uuid()) @db.Uuid
-  name  String @db.VarChar(200)
-  title String? @db.VarChar(200)
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @db.VarChar(200)
+  title       String? @db.VarChar(200)
   description String? @db.VarChar(1000)
-
 
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)

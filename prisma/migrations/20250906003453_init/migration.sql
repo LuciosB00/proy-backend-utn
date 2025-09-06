@@ -31,7 +31,7 @@ CREATE TABLE "public"."users" (
 CREATE TABLE "public"."students" (
     "id" UUID NOT NULL,
     "dateBirth" TIMESTAMPTZ(3),
-    "dni" TEXT,
+    "dni" INTEGER NOT NULL,
     "phone" VARCHAR(20),
     "address" VARCHAR(50),
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,7 +47,7 @@ CREATE TABLE "public"."students" (
 CREATE TABLE "public"."teachers" (
     "id" UUID NOT NULL,
     "dateBirth" TIMESTAMPTZ(3),
-    "dni" TEXT NOT NULL,
+    "dni" INTEGER NOT NULL,
     "phone" VARCHAR(20),
     "address" VARCHAR(50),
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -131,8 +131,8 @@ CREATE TABLE "public"."courses" (
 CREATE TABLE "public"."careers" (
     "id" UUID NOT NULL,
     "name" VARCHAR(200) NOT NULL,
-    "title" VARCHAR(200) NOT NULL,
-    "description" VARCHAR(1000) NOT NULL,
+    "title" VARCHAR(200),
+    "description" VARCHAR(1000),
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3),
     "deletedAt" TIMESTAMPTZ(3),
