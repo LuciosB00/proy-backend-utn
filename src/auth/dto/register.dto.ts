@@ -17,6 +17,7 @@ export class RegisterDto {
   @IsEnum(Role)
   role: Role;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   dni: number;
 }

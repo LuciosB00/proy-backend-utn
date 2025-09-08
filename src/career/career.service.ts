@@ -37,15 +37,15 @@ export class CareerService {
     return `This action returns all career`;
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     return `This action returns a #${id} career`;
   }
 
-  async update(id: number, updateCareerDto: UpdateCareerDto) {
+  async update(id: string, updateCareerDto: UpdateCareerDto) {
     return `This action updates a #${id} career`;
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     return `This action removes a #${id} career`;
   }
 }
