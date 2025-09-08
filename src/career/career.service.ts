@@ -2,50 +2,85 @@ import { BadRequestException, ConflictException, Injectable } from '@nestjs/comm
 import { CreateCareerDto } from './dto/create-career.dto';
 import { UpdateCareerDto } from './dto/update-career.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CareerService {
+  prismaService: any;
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(createCareerDto: CreateCareerDto) {
-    try{
+  async create(createCareerDto: CreateCareerDto, tx?: Prisma.TransactionClient) {
+    try {
+      const prisma = tx || this.prisma;
+
       const { name, description, title } = createCareerDto;
 
-      const exist = await this.prisma.career.findFirst({
+      const exist = await prisma.career.findFirst({
         where: {
           name: createCareerDto.name
         }
       })
 
-      if(!exist){
+      if (exist) {
         throw new ConflictException('Career already exists')
       }
-    }catch(error){
-      throw new BadRequestException('La carrera ya existe')
-    }
 
-    return await this.prisma.career.create({
-      data: {
-        name: createCareerDto.name,
-        description: createCareerDto.description,
-        title: createCareerDto.title
-      },
-    });
+      return await prisma.career.create({
+        data: {
+          name: name,
+          description: description,
+          title: title
+        },
+      })
+    } catch (error) {
+      throw new BadRequestException('Error creating career: ' + error.message)
+    }
   }
 
   async findAll() {
-    return `This action returns all career`;
+    return await this.prisma.career.findMany();
   }
 
   async findOne(id: string) {
-    return `This action returns a #${id} career`;
+    const carrer = this.prisma.career.findUnique({
+      where: {
+        id: id,
+        deletedAt: null
+      }
+    })
+    if (!carrer) {
+      throw new BadRequestException('Career not found')
+    }
+    return carrer;
   }
 
   async update(id: string, updateCareerDto: UpdateCareerDto) {
-    return `This action updates a #${id} career`;
+    try {
+      const carrer = await this.prisma.career.findUnique({
+        where: {
+          id: id
+        }
+      })
+
+      if (!carrer) {
+        throw new BadRequestException('Career not found')
+      }
+
+      return await this.prisma.career.update({
+        where: { id: id },
+        data: updateCareerDto,
+      })
+    } catch (error) {
+      throw new BadRequestException('Error updating career:' + error.message)
+    }
   }
 
   async remove(id: string) {
-    return `This action removes a #${id} career`;
+    try {
+      await this.prismaService.carrer.delete({ where: { id } });
+      return { message: `Carrer #${id} deleted successfully` };
+    } catch (error) {
+      throw new BadRequestException(`Error deleting career: ${error.message}`);
+    }
   }
 }

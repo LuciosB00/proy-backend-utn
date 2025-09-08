@@ -1,26 +1,90 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CourseService {
-  create(createCourseDto: CreateCourseDto) {
-    return 'This action adds a new course';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createCourseDto: CreateCourseDto, tx?: Prisma.TransactionClient) {
+    try {
+      const prisma = tx || this.prisma;
+
+      const { careerId, name, year, fourthMonth } = createCourseDto;
+
+      const existCareer = await prisma.course.findFirst({
+        where: {
+          name: createCourseDto.name
+        }
+      })
+
+      if (existCareer) {
+        throw new BadRequestException('Course with this name already exists');
+      }
+
+      return await prisma.course.create({
+        data: {
+          careerId: careerId,
+          name: name,
+          year: year,
+          fourMonth: fourthMonth
+        }
+      })
+    } catch (error) {
+      throw new BadRequestException('Error creating course:' + error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all course`;
+  async findAll() {
+    return await this.prisma.course.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  async findOne(id: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id },
+    });
+    if (!course) {
+      throw new BadRequestException(`Course with ID ${id} not found`);
+    }
+    return course;
   }
 
-  update(id: number, updateCourseDto: UpdateCourseDto) {
-    return `This action updates a #${id} course`;
+  async update(id: string, updateCourseDto: UpdateCourseDto) {
+    try {
+      const course = await this.prisma.course.findUnique({
+        where: { id },
+      });
+
+      if (!course) {
+        throw new BadRequestException(`Course with ID ${id} not found`);
+      }
+
+      return await this.prisma.course.update({
+        where: { id },
+        data: updateCourseDto,
+      });
+    } catch (error) {
+      throw new BadRequestException('Error updating course:' + error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} course`;
+  async remove(id: string) {
+    try {
+      const course = await this.prisma.course.findUnique({
+        where: { id },
+      });
+
+      if (!course) {
+        throw new BadRequestException(`Course with ID ${id} not found`);
+      }
+
+      return await this.prisma.course.delete({
+        where: { id },
+      });
+    } catch (error) {
+      throw new BadRequestException('Error deleting course:' + error.message);
+    }
   }
 }
