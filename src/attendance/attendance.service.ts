@@ -1,26 +1,75 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AttendanceService {
-  create(createAttendanceDto: CreateAttendanceDto) {
-    return 'This action adds a new attendance';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createAttendanceDto: CreateAttendanceDto, tx?: Prisma.TransactionClient) {
+    try {
+      const prisma = tx || this.prisma;
+
+      const { studentId, courseId, attendanceDate } = createAttendanceDto;
+
+      const existingAttendance = await prisma.attendance.findFirst({
+        where: {
+          studentId: studentId,
+          courseId: courseId,
+          attendanceDate: attendanceDate,
+        },
+      })
+
+      if (existingAttendance) {
+        throw new Error('Attendance already exists');
+      }
+
+      return await prisma.attendance.create({
+        data: createAttendanceDto,
+      });
+    } catch (error) {
+      throw new Error(`Failed to create attendance: ${error.message}`);
+    }
   }
 
-  findAll() {
-    return `This action returns all attendance`;
+  async findAll() {
+    return await this.prisma.attendance.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} attendance`;
+  async findOne(id: string) {
+    const attendance = await this.prisma.attendance.findUnique({
+      where: { id },
+    });
+
+    if (!attendance) {
+      throw new Error('Attendance not found');
+    }
+
+    return attendance;
   }
 
-  update(id: number, updateAttendanceDto: UpdateAttendanceDto) {
-    return `This action updates a #${id} attendance`;
+  async update(id: string, updateAttendanceDto: UpdateAttendanceDto) {
+    try {
+      const updatedAttendance = await this.prisma.attendance.update({
+        where: { id },
+        data: updateAttendanceDto,
+      });
+      return updatedAttendance;
+    } catch (error) {
+      throw new Error(`Failed to update attendance: ${error.message}`);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} attendance`;
+  async remove(id: string) {
+    try {
+      await this.prisma.attendance.delete({
+        where: { id },
+      });
+      return { message: 'Attendance deleted successfully' };
+    } catch (error) {
+      throw new Error(`Failed to delete attendance: ${error.message}`);
+    }
   }
 }

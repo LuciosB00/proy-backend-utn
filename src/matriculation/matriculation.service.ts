@@ -1,26 +1,93 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateMatriculationDto } from './dto/create-matriculation.dto';
 import { UpdateMatriculationDto } from './dto/update-matriculation.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MatriculationService {
-  create(createMatriculationDto: CreateMatriculationDto) {
-    return 'This action adds a new matriculation';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createMatriculationDto: CreateMatriculationDto, tx?: Prisma.TransactionClient) {
+    try {
+      tx = tx || this.prisma;
+
+      const { studentId, courseId, registrationState, courseState } = createMatriculationDto;
+
+      const existMatriculation = await tx.matriculation.findFirst({
+        where: {
+          studentId,
+          courseId,
+        },
+      })
+
+      if (existMatriculation) {
+        throw new Error('Matriculation already exists')
+      }
+
+      const matriculation = await tx.matriculation.create({
+        data: {
+          studentId: studentId,
+          courseId: courseId,
+          registrationState: registrationState,
+          courseState: courseState,
+        },
+      })
+      return matriculation;
+    }catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all matriculation`;
+  async findAll() {
+    return await this.prisma.matriculation.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} matriculation`;
+  async findOne(id: string) {
+    const matriculation = await this.prisma.matriculation.findUnique({
+      where: {
+        id: id,
+      },
+    })
+
+    if (!matriculation) {
+      throw new BadRequestException('Matriculation not found')
+    }
+
+    return matriculation;
   }
 
-  update(id: number, updateMatriculationDto: UpdateMatriculationDto) {
-    return `This action updates a #${id} matriculation`;
+  async update(id: string, updateMatriculationDto: UpdateMatriculationDto) {
+    try {
+      const { studentId, courseId, registrationState, courseState } = updateMatriculationDto;
+
+      const matriculation = await this.prisma.matriculation.update({
+        where: {
+          id: id,
+        },
+        data: {
+          studentId: studentId,
+          courseId: courseId,
+          registrationState: registrationState,
+          courseState: courseState,
+        }
+      })
+      return matriculation;
+    }catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} matriculation`;
+  async remove(id: string) {
+    try {
+      const matriculation = await this.prisma.matriculation.delete({
+        where: {
+          id: id,
+        },
+      })
+      return matriculation;
+    }catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

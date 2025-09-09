@@ -19,16 +19,16 @@ export class MatriculationController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.matriculationService.findOne(+id);
+    return this.matriculationService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMatriculationDto: UpdateMatriculationDto) {
-    return this.matriculationService.update(+id, updateMatriculationDto);
+    return this.matriculationService.update(id, updateMatriculationDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.matriculationService.remove(+id);
+    return this.matriculationService.remove(id);
   }
 }
