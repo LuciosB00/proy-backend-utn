@@ -12,13 +12,77 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { User } from '@prisma/client';
+import { RegisterDto } from './dto/register.dto';
+import { Role } from '@prisma/client';
+import { StudentService } from 'src/student/student.service';
+import { TeacherService } from 'src/teacher/teacher.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly studentService: StudentService,
+    private readonly teacherService: TeacherService,
+  ) { }
+
+  async register(registerDto: RegisterDto) {
+    try {
+      const { email, password, fullName, role, dni } = registerDto;
+
+      if (!role || role == Role.ADMIN) {
+        throw new BadRequestException('Role is required / Role is invalid');
+      }
+
+      const exist = await this.prismaService.user.findUnique({
+        where: {
+          email,
+          deletedAt: null,
+        },
+        select: {
+          id: true
+        },
+      });
+
+      if (exist) {
+        throw new BadRequestException('The user already exists');
+      }
+
+      const hashedPassword = bcrypt.hashSync(password, 10);
+
+      this.prismaService.$transaction(async (tx) => {
+
+        const user = await tx.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            fullName,
+            role,
+          },
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        });
+
+        if (role == Role.STUDENT) {
+          await this.studentService.create({ userId: user.id, dni }, tx);
+        } else if (role == Role.TEACHER) {
+          await this.teacherService.create({ userId: user.id, dni }, tx);
+        }
+        
+      });
+
+      return {
+        message: 'User registered successfully'
+      };
+    }
+    catch (error) {
+      this.handleDbExceptions(error);
+    }
+  }
 
   async login(loginDto: LoginDto) {
     try {
@@ -90,17 +154,17 @@ export class AuthService {
     return token;
   }
 
-  resetPassword() {}
+  resetPassword() { }
 
-  forgotPassword() {}
+  forgotPassword() { }
 
-  changePassword() {}
+  changePassword() { }
 
-  validateUser() {}
+  validateUser() { }
 
-  validateToken() {}
+  validateToken() { }
 
-  sendEmail() {}
+  sendEmail() { }
 
   private handleDbExceptions(error: any): never {
     if (error?.status === HttpStatus.UNAUTHORIZED) {

@@ -10,8 +10,34 @@ datasource db {
 }
 
 enum Role {
-  USER
   ADMIN
+  STUDENT
+  TEACHER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum RegistrationState {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
+enum CourseState {
+  PROMOTED
+  REGULAR
+  FREE
+}
+
+enum FourMonth {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
 }
 
 model User {
@@ -19,12 +45,182 @@ model User {
   email    String @unique
   fullName String
   password String
-  role     Role   @default(USER)
+  role     Role   @default(STUDENT)
 
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)
   deletedAt DateTime? @db.Timestamptz(3)
 
+  student Student?
+  teacher Teacher?
+
   @@index([id, email])
   @@map("users")
+}
+
+model Student {
+  id        String    @id @default(uuid()) @db.Uuid
+  dateBirth DateTime? @db.Timestamptz(3)
+  dni       Int       @unique
+  phone     String?   @db.VarChar(20)
+  address   String?   @db.VarChar(50)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique @db.Uuid
+
+  registrationState RegistrationState @default(PENDING)
+
+  matriculations Matriculation[]
+  qualifications Qualification[]
+  attendances    Attendance[]
+  courses        Course[]        @relation("StudentCourses")
+  careers        Career[]        @relation("StudentCareers")
+
+  @@index([id, dni])
+  @@map("students")
+}
+
+model Teacher {
+  id        String    @id @default(uuid()) @db.Uuid
+  dateBirth DateTime? @db.Timestamptz(3)
+  dni       Int       @unique
+  phone     String?   @db.VarChar(20)
+  address   String?   @db.VarChar(50)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique @db.Uuid
+
+  courses Course[] @relation("TeacherCourses")
+
+  @@index([id])
+  @@map("teachers")
+}
+
+model Matriculation {
+  id String @id @default(uuid()) @db.Uuid
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  registrationState RegistrationState @default(PENDING)
+  courseState       CourseState?
+
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String  @db.Uuid
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @db.Uuid
+
+  @@index([id])
+  @@map("matriculations")
+}
+
+model Qualification {
+  id   String  @id @default(uuid()) @db.Uuid
+  note Decimal @db.Decimal(2, 2)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  qualificationDate DateTime @default(now()) @db.Timestamptz(3)
+
+  qualificationState   QualificationState @relation(fields: [qualificationStateId], references: [id])
+  qualificationStateId String             @db.Uuid
+
+  QualificationState QualificationState[] @relation("QualificationStateToQualification")
+
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String  @db.Uuid
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @db.Uuid
+
+  @@index([id])
+  @@map("qualifications")
+}
+
+model QualificationState {
+  id   String  @id @default(uuid()) @db.Uuid
+  name String  @db.VarChar(100)
+  note Decimal @db.Decimal(2, 2)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  qualifications Qualification[] @relation("QualificationStateToQualification")
+  Qualification  Qualification[]
+
+  @@index([id])
+  @@map("qualification_states")
+}
+
+model Attendance {
+  id String @id @default(uuid()) @db.Uuid
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  attendanceDate  DateTime         @default(now()) @db.Timestamptz(3)
+  attendanceState AttendanceStatus @default(PRESENT)
+
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String  @db.Uuid
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @db.Uuid
+
+  @@index([id])
+  @@map("attendances")
+}
+
+model Course {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(100)
+  year      Int
+  fourMonth FourMonth
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  career   Career @relation(fields: [careerId], references: [id])
+  careerId String @db.Uuid
+
+  matriculations Matriculation[]
+  qualifications Qualification[]
+  attendances    Attendance[]
+  students       Student[]       @relation("StudentCourses")
+  teachers       Teacher[]       @relation("TeacherCourses")
+
+  @@index([id, year, fourMonth])
+  @@map("courses")
+}
+
+model Career {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @db.VarChar(200)
+  title       String? @db.VarChar(200)
+  description String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  courses  Course[]
+  students Student[] @relation("StudentCareers")
+
+  @@index([id])
+  @@map("careers")
 }
