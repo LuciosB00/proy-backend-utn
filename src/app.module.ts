@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
+import { Module } from "@nestjs/common";
+import { UserModule } from "./user/user.module";
+import { AuthModule } from "./auth/auth.module";
 import { StudentModule } from './student/student.module';
 import { TeacherModule } from './teacher/teacher.module';
 import { CareerModule } from './career/career.module';
@@ -10,6 +11,6 @@ import { QualificationStateModule } from './qualification-state/qualification-st
 import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
-  imports: [UserModule, StudentModule, TeacherModule, CareerModule, CourseModule, MatriculationModule, QualificationModule, QualificationStateModule, AttendanceModule],
+  imports: [AuthModule, UserModule, StudentModule, TeacherModule, CareerModule, CourseModule, MatriculationModule, QualificationModule, QualificationStateModule, AttendanceModule]
 })
 export class AppModule {}
