@@ -159,7 +159,7 @@ model QualificationState {
   deletedAt DateTime? @db.Timestamptz(3)
 
   qualifications Qualification[] @relation("QualificationStateToQualification")
-  Qualification  Qualification[]
+  qualificationId  Qualification[]
 
   @@index([id])
   @@map("qualification_states")

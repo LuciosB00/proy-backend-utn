@@ -19,16 +19,16 @@ export class QualificationStateController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.qualificationStateService.findOne(+id);
+    return this.qualificationStateService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateQualificationStateDto: UpdateQualificationStateDto) {
-    return this.qualificationStateService.update(+id, updateQualificationStateDto);
+    return this.qualificationStateService.update(id, updateQualificationStateDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.qualificationStateService.remove(+id);
+    return this.qualificationStateService.remove(id);
   }
 }

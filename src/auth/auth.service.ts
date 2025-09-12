@@ -1,9 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -31,7 +33,7 @@ export class AuthService {
       const { email, password, fullName, role, dni } = registerDto;
 
       if (!role || role == Role.ADMIN) {
-        throw new BadRequestException('Role is required / Role is invalid');
+        throw new UnauthorizedException('Role is required / Role is invalid');
       }
 
       const exist = await this.prismaService.user.findUnique({
@@ -45,7 +47,7 @@ export class AuthService {
       });
 
       if (exist) {
-        throw new BadRequestException('The user already exists');
+        throw new ConflictException('The user already exists');
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
@@ -72,7 +74,7 @@ export class AuthService {
         } else if (role == Role.TEACHER) {
           await this.teacherService.create({ userId: user.id, dni }, tx);
         }
-        
+
       });
 
       return {
@@ -173,6 +175,14 @@ export class AuthService {
 
     if (error?.status === HttpStatus.BAD_REQUEST) {
       throw new BadRequestException('Error en la petición');
+    }
+
+    if (error?.status === HttpStatus.CONFLICT) {
+      throw new ConflictException('El usuario ya existe');
+    }
+
+    if (error?.status === HttpStatus.NOT_FOUND) {
+      throw new NotFoundException('El usuario no existe');
     }
 
     Logger.error(error);
