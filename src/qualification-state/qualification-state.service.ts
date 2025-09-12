@@ -14,9 +14,9 @@ export class QualificationStateService {
 
       const { name, note } = createQualificationStateDto;
 
-      const existingQualificationState = await prisma.qualificationState.findFirst({
+      const existingQualificationState = await (prisma.qualificationState.findFirst as any)({
         where: {
-          name: name,
+          name,
         }
       });
 
