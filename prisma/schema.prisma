@@ -40,6 +40,150 @@ enum FourMonth {
   FOURTH
 }
 
+enum Especiliad {
+  CLINICO
+  CIRUJANO
+  PEDIATRA
+  PSQUIATRA
+}
+
+model Medico {
+  cedula   Int    @id
+  nombre   String @db.VarChar(15)
+  apellido String @db.VarChar(15)
+
+  especialidad Especiliad
+
+  recetas Receta[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([cedula])
+  @@map("Medicos")
+}
+
+model Paciente {
+  nro_legajo Int    @id
+  nombre     String @db.VarChar(15)
+  apellido   String @db.VarChar(15)
+  dni        Int
+
+  recetas Receta[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([nro_legajo])
+  @@map("Pacientes")
+}
+
+model Farmaceutico {
+  cedula       Int    @id
+  nombre       String @db.VarChar(15)
+  apellido     String @db.VarChar(15)
+  clave_acceso Int
+
+  computadoras ComputadoraGeneral[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([clave_acceso])
+  @@map("Farmaceuticos")
+}
+
+model Receta {
+  nro_receta        String               @id
+  medicoCedula      Int
+  pacienteNroLegajo Int
+  medico            Medico               @relation(fields: [medicoCedula], references: [cedula])
+  paciente          Paciente             @relation(fields: [pacienteNroLegajo], references: [nro_legajo])
+  productos         RecetaProducto[]
+  computadoras      ComputadoraGeneral[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([nro_receta])
+  @@map("Recetas")
+}
+
+model ComputadoraGeneral {
+  id_computadora     String   @id
+  clave_ingresada    String
+  fecha_expedicion   DateTime
+  farmaceuticoCedula Int
+  recetaNroReceta    String
+
+  farmaceutico Farmaceutico @relation(fields: [farmaceuticoCedula], references: [cedula])
+  receta       Receta       @relation(fields: [recetaNroReceta], references: [nro_receta])
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([id_computadora])
+  @@index([clave_ingresada])
+  @@map("ComputadoraGeneral")
+}
+
+model CategoriaProducto {
+  id_cat        Int    @id
+  categoriaName String
+
+  productos Producto[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([id_cat])
+  @@map("CategoriasProductos")
+}
+
+model Producto {
+  id           String            @id
+  nombre       String
+  descripcion  String
+  presentation String
+  stock        Int
+  categoriaId  Int
+  categoria    CategoriaProducto @relation(fields: [categoriaId], references: [id_cat])
+  recetas      RecetaProducto[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([id])
+  @@map("Productos")
+}
+
+model RecetaProducto {
+  id_receta_prod    Int      @id
+  fecha_emision     DateTime
+  fecha_vencimiento DateTime
+  dosificacion      String
+  cantidad          Int
+  recetaNroReceta   String
+  productoId        String
+
+  receta   Receta   @relation(fields: [recetaNroReceta], references: [nro_receta])
+  producto Producto @relation(fields: [productoId], references: [id])
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  @@index([id_receta_prod])
+  @@map("RecetaProductos")
+}
+
 model User {
   id       String @id @default(uuid()) @db.Uuid
   email    String @unique
