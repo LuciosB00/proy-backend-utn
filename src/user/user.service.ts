@@ -95,14 +95,16 @@ export class UserService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
+      let  { password, ...rest } = updateUserDto;
+
       const findUser = await this.findOne(id);
 
       if (!findUser) {
         throw new Error('User not found');
       }
 
-      if (updateUserDto.password) {
-        updateUserDto.password = hashSync(updateUserDto.password, 10);
+      if (password?.trim()) {
+        password = hashSync(password, 10);
       }
 
       return await this.prisma.user.update({
@@ -110,7 +112,8 @@ export class UserService {
           id: id,
         },
         data: {
-          ...updateUserDto,
+          ...rest,
+          password: password || undefined,
         },
         select: {
           id: true,

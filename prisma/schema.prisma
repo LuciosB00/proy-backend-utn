@@ -42,7 +42,7 @@ enum FourMonth {
 
 model User {
   id       String @id @default(uuid()) @db.Uuid
-  email    String @unique
+  email    String
   fullName String
   password String
   role     Role   @default(STUDENT)
