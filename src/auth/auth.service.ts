@@ -7,17 +7,17 @@ import {
   Logger,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './dto/login.dto';
-import { User } from '@prisma/client';
-import { RegisterDto } from './dto/register.dto';
-import { Role } from '@prisma/client';
-import { StudentService } from 'src/student/student.service';
-import { TeacherService } from 'src/teacher/teacher.service';
+} from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+import * as bcrypt from "bcrypt";
+import { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { JwtService } from "@nestjs/jwt";
+import { LoginDto } from "./dto/login.dto";
+import { User } from "@prisma/client";
+import { RegisterDto } from "./dto/register.dto";
+import { Role } from "@prisma/client";
+import { StudentService } from "src/student/student.service";
+import { TeacherService } from "src/teacher/teacher.service";
 
 @Injectable()
 export class AuthService {
@@ -26,14 +26,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly studentService: StudentService,
     private readonly teacherService: TeacherService,
-  ) { }
+  ) {}
 
   async register(registerDto: RegisterDto) {
     try {
       const { email, password, fullName, role, dni } = registerDto;
 
       if (!role || role == Role.ADMIN) {
-        throw new UnauthorizedException('Role is required / Role is invalid');
+        throw new UnauthorizedException("Role is required / Role is invalid");
       }
 
       const exist = await this.prismaService.user.findUnique({
@@ -42,18 +42,17 @@ export class AuthService {
           deletedAt: null,
         },
         select: {
-          id: true
+          id: true,
         },
       });
 
       if (exist) {
-        throw new ConflictException('The user already exists');
+        throw new ConflictException("The user already exists");
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
 
       this.prismaService.$transaction(async (tx) => {
-
         const user = await tx.user.create({
           data: {
             email,
@@ -74,14 +73,12 @@ export class AuthService {
         } else if (role == Role.TEACHER) {
           await this.teacherService.create({ userId: user.id, dni }, tx);
         }
-
       });
 
       return {
-        message: 'User registered successfully'
+        message: "User registered successfully",
       };
-    }
-    catch (error) {
+    } catch (error) {
       this.handleDbExceptions(error);
     }
   }
@@ -105,11 +102,11 @@ export class AuthService {
       })) as Partial<User>;
 
       if (!user) {
-        throw new UnauthorizedException('Credenciales inválidas');
+        throw new UnauthorizedException("Credenciales inválidas");
       }
 
       if (!bcrypt.compareSync(password, user.password!)) {
-        throw new UnauthorizedException('Credenciales inválidas');
+        throw new UnauthorizedException("Credenciales inválidas");
       }
 
       delete user.password;
@@ -156,36 +153,38 @@ export class AuthService {
     return token;
   }
 
-  resetPassword() { }
+  resetPassword() {}
 
-  forgotPassword() { }
+  forgotPassword() {}
 
-  changePassword() { }
+  changePassword() {}
 
-  validateUser() { }
+  validateUser() {}
 
-  validateToken() { }
+  validateToken() {}
 
-  sendEmail() { }
+  sendEmail() {}
 
   private handleDbExceptions(error: any): never {
+    console.log("handleDbExceptions: ", error);
+
     if (error?.status === HttpStatus.UNAUTHORIZED) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      throw new UnauthorizedException("Credenciales inválidas");
     }
 
     if (error?.status === HttpStatus.BAD_REQUEST) {
-      throw new BadRequestException('Error en la petición');
+      throw new BadRequestException("Error en la petición");
     }
 
     if (error?.status === HttpStatus.CONFLICT) {
-      throw new ConflictException('El usuario ya existe');
+      throw new ConflictException("El usuario ya existe");
     }
 
     if (error?.status === HttpStatus.NOT_FOUND) {
-      throw new NotFoundException('El usuario no existe');
+      throw new NotFoundException("El usuario no existe");
     }
 
     Logger.error(error);
-    throw new InternalServerErrorException('Error inesperado');
+    throw new InternalServerErrorException("Error inesperado");
   }
 }

@@ -1,26 +1,32 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
-import { Prisma } from '@prisma/client';
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { CreateStudentDto } from "./dto/create-student.dto";
+import { UpdateStudentDto } from "./dto/update-student.dto";
+import { PrismaService } from "src/prisma/prisma.service";
+import { UserService } from "src/user/user.service";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class StudentService {
-  constructor(private readonly prismaService: PrismaService, private readonly userService: UserService) { }
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly userService: UserService,
+  ) {}
 
-  async create(createStudentDto: CreateStudentDto, tx?: Prisma.TransactionClient) {
+  async create(
+    createStudentDto: CreateStudentDto,
+    tx?: Prisma.TransactionClient,
+  ) {
     try {
       const prisma = tx || this.prismaService;
 
       const exists = await prisma.user.findUnique({
         where: {
-          id: createStudentDto.userId
-        }
+          id: createStudentDto.userId,
+        },
       });
 
       if (!exists) {
-        throw new BadRequestException('User not found');
+        throw new BadRequestException("User not found");
       }
 
       const { dni, phone, address } = createStudentDto;
@@ -30,7 +36,7 @@ export class StudentService {
       });
 
       if (existingStudent) {
-        throw new BadRequestException('Student with this DNI already exists');
+        throw new BadRequestException("Student with this DNI already exists");
       }
 
       return await prisma.student.create({
@@ -41,7 +47,8 @@ export class StudentService {
         },
       });
     } catch (error) {
-      throw new BadRequestException('Error creating student: ' + error.message);
+      throw new BadRequestException(error.message);
+      console.log("createStudent error:", error);
     }
   }
 
