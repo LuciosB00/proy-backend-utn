@@ -48,7 +48,7 @@ export class AuthService {
 
       const hashedPassword = bcrypt.hashSync(password, 10);
 
-      this.prismaService.$transaction(async (tx) => {
+      await this.prismaService.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
             email,

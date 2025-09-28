@@ -2,22 +2,21 @@ import { Injectable, BadRequestException } from "@nestjs/common";
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { UpdateStudentDto } from "./dto/update-student.dto";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserService } from "src/user/user.service";
 import { Prisma } from "@generated";
+import { HandleErrors } from "src/common/exceptions/handle-errors";
 
 @Injectable()
 export class StudentService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly userService: UserService,
-  ) {}
+  ) { }
 
   async create(
     createStudentDto: CreateStudentDto,
-    tx?: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient,
   ) {
     try {
-      const prisma = tx || this.prismaService;
+      const prisma = tx;
 
       const exists = await prisma.user.findUnique({
         where: {
@@ -36,7 +35,7 @@ export class StudentService {
       });
 
       if (existingStudent) {
-        throw new BadRequestException("Student with this DNI already exists");
+        throw new BadRequestException("Estudiante con este DNI ya existe");
       }
 
       return await prisma.student.create({
@@ -47,23 +46,30 @@ export class StudentService {
         },
       });
     } catch (error) {
-      throw new BadRequestException(error.message);
-      console.log("createStudent error:", error);
+      throw error;
     }
   }
 
   async findAll() {
-    return await this.prismaService.student.findMany();
+    try {
+      return await this.prismaService.student.findMany();
+    } catch (error) {
+      HandleErrors.handleHttpExceptions(error);
+    }
   }
 
   async findOne(id: string) {
-    const student = await this.prismaService.student.findUnique({
-      where: { id, deletedAt: null },
-    });
-    if (!student) {
-      throw new BadRequestException(`Student with ID ${id} not found`);
+    try {
+      const student = await this.prismaService.student.findUnique({
+        where: { id, deletedAt: null },
+      });
+      if (!student) {
+        throw new BadRequestException(`Student with ID ${id} not found`);
+      }
+      return student;
+    } catch (error) {
+      HandleErrors.handleHttpExceptions(error);
     }
-    return student;
   }
 
   async update(id: string, updateStudentDto: UpdateStudentDto) {
@@ -74,7 +80,7 @@ export class StudentService {
       });
       return updatedStudent;
     } catch (error) {
-      throw new BadRequestException(`Error updating student: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 
@@ -83,7 +89,7 @@ export class StudentService {
       await this.prismaService.student.delete({ where: { id } });
       return { message: `Student #${id} deleted successfully` };
     } catch (error) {
-      throw new BadRequestException(`Error deleting student: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 }
