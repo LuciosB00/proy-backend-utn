@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateQualificationDto } from './dto/create-qualification.dto';
 import { UpdateQualificationDto } from './dto/update-qualification.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@generated';
 import { BadRequestException } from '@nestjs/common';
 import { readFile } from 'fs';
 

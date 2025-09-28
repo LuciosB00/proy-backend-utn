@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient, Role } from "../generated/prisma/client";
 import { hashSync } from "bcrypt";
 
 // initialize Prisma Client

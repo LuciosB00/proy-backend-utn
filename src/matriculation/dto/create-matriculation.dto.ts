@@ -1,4 +1,4 @@
-import { CourseState, RegistrationState } from "@prisma/client"
+import { CourseState, RegistrationState } from "@generated"
 import { IsEnum, IsUUID } from "class-validator"
 
 export class CreateMatriculationDto {

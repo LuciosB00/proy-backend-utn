@@ -1,4 +1,4 @@
-import { FourMonth } from "@prisma/client";
+import { FourMonth } from "@generated";
 import { IsEnum, IsNumber, IsString, IsUUID, Length } from "class-validator";
 
 export class CreateCourseDto {

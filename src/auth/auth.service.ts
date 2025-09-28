@@ -1,11 +1,6 @@
 import {
-  BadRequestException,
   ConflictException,
-  HttpStatus,
   Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -13,9 +8,10 @@ import * as bcrypt from "bcrypt";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 import { JwtService } from "@nestjs/jwt";
 import { LoginDto } from "./dto/login.dto";
-import { User } from "@prisma/client";
+import { User } from "@generated";
+import { HandleErrors } from "src/common/exceptions/handle-errors";
 import { RegisterDto } from "./dto/register.dto";
-import { Role } from "@prisma/client";
+import { Role } from "@generated";
 import { StudentService } from "src/student/student.service";
 import { TeacherService } from "src/teacher/teacher.service";
 
@@ -33,10 +29,10 @@ export class AuthService {
       const { email, password, fullName, role, dni } = registerDto;
 
       if (!role || role == Role.ADMIN) {
-        throw new UnauthorizedException("Role is required / Role is invalid");
+        throw new UnauthorizedException("Rol inválido");
       }
 
-      const exist = await this.prismaService.user.findUnique({
+      const exist = await this.prismaService.user.findFirst({
         where: {
           email,
           deletedAt: null,
@@ -47,7 +43,7 @@ export class AuthService {
       });
 
       if (exist) {
-        throw new ConflictException("The user already exists");
+        throw new ConflictException("El usuario ya existe");
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
@@ -76,10 +72,10 @@ export class AuthService {
       });
 
       return {
-        message: "User registered successfully",
+        message: "Usuario registrado exitosamente",
       };
     } catch (error) {
-      this.handleDbExceptions(error);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -87,7 +83,7 @@ export class AuthService {
     try {
       const { email, password } = loginDto;
 
-      const user = (await this.prismaService.user.findUnique({
+      const user = (await this.prismaService.user.findFirst({
         where: {
           email,
           deletedAt: null,
@@ -116,7 +112,7 @@ export class AuthService {
         token: this.getJwtToken({ id: user.id! }),
       };
     } catch (error) {
-      this.handleDbExceptions(error);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -144,7 +140,7 @@ export class AuthService {
         active: false,
       };
     } catch (error) {
-      this.handleDbExceptions(error);
+       HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -164,27 +160,4 @@ export class AuthService {
   validateToken() {}
 
   sendEmail() {}
-
-  private handleDbExceptions(error: any): never {
-    console.log("handleDbExceptions: ", error);
-
-    if (error?.status === HttpStatus.UNAUTHORIZED) {
-      throw new UnauthorizedException("Credenciales inválidas");
-    }
-
-    if (error?.status === HttpStatus.BAD_REQUEST) {
-      throw new BadRequestException("Error en la petición");
-    }
-
-    if (error?.status === HttpStatus.CONFLICT) {
-      throw new ConflictException("El usuario ya existe");
-    }
-
-    if (error?.status === HttpStatus.NOT_FOUND) {
-      throw new NotFoundException("El usuario no existe");
-    }
-
-    Logger.error(error);
-    throw new InternalServerErrorException("Error inesperado");
-  }
 }

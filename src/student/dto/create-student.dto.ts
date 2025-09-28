@@ -1,4 +1,4 @@
-import { RegistrationState } from "@prisma/client";
+import { RegistrationState } from "@generated";
 import { Transform } from "class-transformer";
 import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
 

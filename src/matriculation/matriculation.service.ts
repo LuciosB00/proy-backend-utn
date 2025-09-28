@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateMatriculationDto } from './dto/create-matriculation.dto';
 import { UpdateMatriculationDto } from './dto/update-matriculation.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@generated';
 
 @Injectable()
 export class MatriculationService {

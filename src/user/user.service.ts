@@ -43,7 +43,7 @@ export class UserService {
 
       
 
-      const findUser = await this.prisma.user.findUnique({
+      const findUser = await this.prisma.user.findFirst({
         where: {
           email: createUserDto.email,
           deletedAt: null,

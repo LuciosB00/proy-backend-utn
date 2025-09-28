@@ -3,7 +3,7 @@ import { CreateTeacherDto } from "./dto/create-teacher.dto";
 import { UpdateTeacherDto } from "./dto/update-teacher.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserService } from "src/user/user.service";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@generated";
 
 @Injectable()
 export class TeacherService {

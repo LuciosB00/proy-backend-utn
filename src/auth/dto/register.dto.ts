@@ -7,7 +7,7 @@ import {
   IsPositive,
 } from "class-validator";
 import { Transform } from "class-transformer";
-import { Role } from "@prisma/client";
+import { Role } from "@generated";
 
 export class RegisterDto {
   @IsEmail()

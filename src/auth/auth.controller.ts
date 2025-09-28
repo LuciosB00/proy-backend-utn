@@ -5,13 +5,12 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
-import { Role, User as UserModel } from '@prisma/client';
+import { Role, User as UserModel } from '@generated';
 import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
