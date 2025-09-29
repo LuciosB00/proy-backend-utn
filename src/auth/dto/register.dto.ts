@@ -1,4 +1,4 @@
-import { IsString, IsEmail, Length, IsEnum, IsNumber } from 'class-validator';
+import { IsString, IsEmail, Length, IsEnum, IsNumber, IsPositive } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Role } from '@prisma/client';
 
@@ -17,7 +17,9 @@ export class RegisterDto {
   @IsEnum(Role)
   role: Role;
 
+  @Length(8, 8, { message: 'El DNI debe tener 8 dígitos' })
   @Transform(({ value }) => Number(value))
   @IsNumber()
+  @IsPositive({ message: 'El DNI debe ser un número positivo' })
   dni: number;
 }

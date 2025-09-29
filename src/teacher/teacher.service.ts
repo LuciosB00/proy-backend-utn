@@ -21,15 +21,15 @@ export class TeacherService {
 
       const { dni, phone, address } = createTeacherDto;
 
-      const existingStudent = await prisma.student.findUnique({
+      const existingTeacher = await prisma.teacher.findUnique({
         where: { dni },
       });
 
-      if (existingStudent) {
+      if (existingTeacher) {
         throw new BadRequestException('Teacher with this DNI already exists');
       }
 
-      return await prisma.student.create({
+      return await prisma.teacher.create({
         data: {
           ...createTeacherDto,
           phone: phone,
