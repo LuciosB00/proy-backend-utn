@@ -31,13 +31,8 @@ export class TeacherService {
         where: { dni },
       });
 
-<<<<<<< HEAD
       if (existingTeacher) {
-        throw new BadRequestException('Teacher with this DNI already exists');
-=======
-      if (existingStudent) {
         throw new BadRequestException("Teacher with this DNI already exists");
->>>>>>> afcf8836fba38bd02cf4b1f678cd9b7fd80a217c
       }
 
       return await prisma.teacher.create({
