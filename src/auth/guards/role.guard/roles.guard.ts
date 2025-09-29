@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 import { ROLES_KEY } from 'src/auth/decorators/role-protected.decorator';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { Role, User } from '@prisma/client';
+import { Role, User } from '@generated';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -26,7 +26,7 @@ export class RolesGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('No se encontro el token');
+      throw new UnauthorizedException('No se encontró el token');
     }
 
     if (!roles || roles.length === 0) {

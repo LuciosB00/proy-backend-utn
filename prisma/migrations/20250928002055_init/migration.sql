@@ -173,9 +173,6 @@ CREATE TABLE "public"."_StudentCareers" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
-
--- CreateIndex
 CREATE INDEX "users_id_email_idx" ON "public"."users"("id", "email");
 
 -- CreateIndex

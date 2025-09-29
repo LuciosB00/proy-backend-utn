@@ -1,22 +1,28 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateTeacherDto } from './dto/create-teacher.dto';
-import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
-import { Prisma } from '@prisma/client';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { CreateTeacherDto } from "./dto/create-teacher.dto";
+import { UpdateTeacherDto } from "./dto/update-teacher.dto";
+import { PrismaService } from "src/prisma/prisma.service";
+import { UserService } from "src/user/user.service";
+import { Prisma } from "@generated";
 
 @Injectable()
 export class TeacherService {
-  constructor(private readonly prismaService: PrismaService, private readonly userService: UserService) { }
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly userService: UserService,
+  ) {}
 
-  async create(createTeacherDto: CreateTeacherDto, tx?: Prisma.TransactionClient) {
+  async create(
+    createTeacherDto: CreateTeacherDto,
+    tx?: Prisma.TransactionClient,
+  ) {
     try {
       const prisma = tx || this.prismaService;
 
       const exists = await this.userService.findOne(createTeacherDto.userId);
 
       if (!exists) {
-        throw new BadRequestException('User not found');
+        throw new BadRequestException("User not found");
       }
 
       const { dni, phone, address } = createTeacherDto;
@@ -25,8 +31,13 @@ export class TeacherService {
         where: { dni },
       });
 
+<<<<<<< HEAD
       if (existingTeacher) {
         throw new BadRequestException('Teacher with this DNI already exists');
+=======
+      if (existingStudent) {
+        throw new BadRequestException("Teacher with this DNI already exists");
+>>>>>>> afcf8836fba38bd02cf4b1f678cd9b7fd80a217c
       }
 
       return await prisma.teacher.create({
@@ -37,7 +48,7 @@ export class TeacherService {
         },
       });
     } catch (error) {
-      throw new BadRequestException('Error creating student: ' + error.message);
+      throw new BadRequestException("Error creating student: " + error.message);
     }
   }
 

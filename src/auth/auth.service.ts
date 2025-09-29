@@ -1,23 +1,19 @@
 import {
-  BadRequestException,
   ConflictException,
-  HttpStatus,
   Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './dto/login.dto';
-import { User } from '@prisma/client';
-import { RegisterDto } from './dto/register.dto';
-import { Role } from '@prisma/client';
-import { StudentService } from 'src/student/student.service';
-import { TeacherService } from 'src/teacher/teacher.service';
+} from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+import * as bcrypt from "bcrypt";
+import { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { JwtService } from "@nestjs/jwt";
+import { LoginDto } from "./dto/login.dto";
+import { User } from "@generated";
+import { HandleErrors } from "src/common/exceptions/handle-errors";
+import { RegisterDto } from "./dto/register.dto";
+import { Role } from "@generated";
+import { StudentService } from "src/student/student.service";
+import { TeacherService } from "src/teacher/teacher.service";
 
 @Injectable()
 export class AuthService {
@@ -26,34 +22,33 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly studentService: StudentService,
     private readonly teacherService: TeacherService,
-  ) { }
+  ) {}
 
   async register(registerDto: RegisterDto) {
     try {
       const { email, password, fullName, role, dni } = registerDto;
 
       if (!role || role == Role.ADMIN) {
-        throw new UnauthorizedException('Role is required / Role is invalid');
+        throw new UnauthorizedException("Rol inválido");
       }
 
-      const exist = await this.prismaService.user.findUnique({
+      const exist = await this.prismaService.user.findFirst({
         where: {
           email,
           deletedAt: null,
         },
         select: {
-          id: true
+          id: true,
         },
       });
 
       if (exist) {
-        throw new ConflictException('The user already exists');
+        throw new ConflictException("El usuario ya existe");
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
 
-      this.prismaService.$transaction(async (tx) => {
-
+      await this.prismaService.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
             email,
@@ -74,15 +69,13 @@ export class AuthService {
         } else if (role == Role.TEACHER) {
           await this.teacherService.create({ userId: user.id, dni }, tx);
         }
-
       });
 
       return {
-        message: 'User registered successfully'
+        message: "Usuario registrado exitosamente",
       };
-    }
-    catch (error) {
-      this.handleDbExceptions(error);
+    } catch (error) {
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -90,7 +83,7 @@ export class AuthService {
     try {
       const { email, password } = loginDto;
 
-      const user = (await this.prismaService.user.findUnique({
+      const user = (await this.prismaService.user.findFirst({
         where: {
           email,
           deletedAt: null,
@@ -105,11 +98,11 @@ export class AuthService {
       })) as Partial<User>;
 
       if (!user) {
-        throw new UnauthorizedException('Credenciales inválidas');
+        throw new UnauthorizedException("Credenciales inválidas");
       }
 
       if (!bcrypt.compareSync(password, user.password!)) {
-        throw new UnauthorizedException('Credenciales inválidas');
+        throw new UnauthorizedException("Credenciales inválidas");
       }
 
       delete user.password;
@@ -119,7 +112,7 @@ export class AuthService {
         token: this.getJwtToken({ id: user.id! }),
       };
     } catch (error) {
-      this.handleDbExceptions(error);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -147,7 +140,7 @@ export class AuthService {
         active: false,
       };
     } catch (error) {
-      this.handleDbExceptions(error);
+       HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -156,36 +149,15 @@ export class AuthService {
     return token;
   }
 
-  resetPassword() { }
+  resetPassword() {}
 
-  forgotPassword() { }
+  forgotPassword() {}
 
-  changePassword() { }
+  changePassword() {}
 
-  validateUser() { }
+  validateUser() {}
 
-  validateToken() { }
+  validateToken() {}
 
-  sendEmail() { }
-
-  private handleDbExceptions(error: any): never {
-    if (error?.status === HttpStatus.UNAUTHORIZED) {
-      throw new UnauthorizedException('Credenciales inválidas');
-    }
-
-    if (error?.status === HttpStatus.BAD_REQUEST) {
-      throw new BadRequestException('Error en la petición');
-    }
-
-    if (error?.status === HttpStatus.CONFLICT) {
-      throw new ConflictException('El usuario ya existe');
-    }
-
-    if (error?.status === HttpStatus.NOT_FOUND) {
-      throw new NotFoundException('El usuario no existe');
-    }
-
-    Logger.error(error);
-    throw new InternalServerErrorException('Error inesperado');
-  }
+  sendEmail() {}
 }

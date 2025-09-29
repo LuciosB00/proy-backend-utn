@@ -1,4 +1,4 @@
-import { AttendanceStatus } from "@prisma/client";
+import { AttendanceStatus } from "@generated";
 import { IsDate, IsEnum, IsUUID } from "class-validator";
 
 export class CreateAttendanceDto {

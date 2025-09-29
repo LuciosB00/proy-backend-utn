@@ -8,7 +8,7 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User, User as UserModel } from '@prisma/client';
+import { User } from '@generated';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -53,7 +53,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('No autorizado');
       }
 
-      throw new InternalServerErrorException('Erro interno');
+      throw new InternalServerErrorException();
     }
   }
 }
