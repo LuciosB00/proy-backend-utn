@@ -3,6 +3,7 @@ import { CreateCareerDto } from './dto/create-career.dto';
 import { UpdateCareerDto } from './dto/update-career.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@generated';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class CareerService {
@@ -22,7 +23,7 @@ export class CareerService {
       })
 
       if (exist) {
-        throw new ConflictException('Career already exists')
+        throw new ConflictException('Carrera ya existe')
       }
 
       return await prisma.career.create({
@@ -33,7 +34,7 @@ export class CareerService {
         },
       })
     } catch (error) {
-      throw new BadRequestException('Error creating career: ' + error.message)
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -49,7 +50,7 @@ export class CareerService {
       }
     })
     if (!carrer) {
-      throw new BadRequestException('Career not found')
+      HandleErrors.handleHttpExceptions(new Error('Carrera no encontrada'))
     }
     return carrer;
   }
@@ -63,7 +64,7 @@ export class CareerService {
       })
 
       if (!carrer) {
-        throw new BadRequestException('Career not found')
+        throw new Error('Carrera no encontrada')
       }
 
       return await this.prisma.career.update({
@@ -71,7 +72,7 @@ export class CareerService {
         data: updateCareerDto,
       })
     } catch (error) {
-      throw new BadRequestException('Error updating career:' + error.message)
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -80,7 +81,7 @@ export class CareerService {
       await this.prismaService.carrer.delete({ where: { id } });
       return { message: `Carrer #${id} deleted successfully` };
     } catch (error) {
-      throw new BadRequestException(`Error deleting career: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 }

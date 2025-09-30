@@ -25,7 +25,7 @@ export class StudentService {
       });
 
       if (!exists) {
-        throw new BadRequestException("User not found");
+        throw new BadRequestException("Usuario no encontrado");
       }
 
       const { dni, phone, address } = createStudentDto;
@@ -64,7 +64,7 @@ export class StudentService {
         where: { id, deletedAt: null },
       });
       if (!student) {
-        throw new BadRequestException(`Student with ID ${id} not found`);
+        throw new BadRequestException("Estudiante no encontrado");
       }
       return student;
     } catch (error) {

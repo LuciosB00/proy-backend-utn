@@ -4,25 +4,20 @@ import { UpdateTeacherDto } from "./dto/update-teacher.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserService } from "src/user/user.service";
 import { Prisma } from "@generated";
+import { HandleErrors } from "src/common/exceptions/handle-errors";
 
 @Injectable()
 export class TeacherService {
-  constructor(
-    private readonly prismaService: PrismaService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly prismaService: PrismaService, private readonly userService: UserService) {}
 
-  async create(
-    createTeacherDto: CreateTeacherDto,
-    tx?: Prisma.TransactionClient,
-  ) {
+  async create(createTeacherDto: CreateTeacherDto, tx?: Prisma.TransactionClient) {
     try {
       const prisma = tx || this.prismaService;
 
       const exists = await this.userService.findOne(createTeacherDto.userId);
 
       if (!exists) {
-        throw new BadRequestException("User not found");
+        throw new Error("Usuario no encontrado");
       }
 
       const { dni, phone, address } = createTeacherDto;
@@ -32,7 +27,7 @@ export class TeacherService {
       });
 
       if (existingTeacher) {
-        throw new BadRequestException("Teacher with this DNI already exists");
+        throw new Error("Docente con este DNI ya existe");
       }
 
       return await prisma.teacher.create({
@@ -43,7 +38,7 @@ export class TeacherService {
         },
       });
     } catch (error) {
-      throw new BadRequestException("Error creating student: " + error.message);
+      throw new Error(error);
     }
   }
 
@@ -56,7 +51,7 @@ export class TeacherService {
       where: { id, deletedAt: null },
     });
     if (!teacher) {
-      throw new BadRequestException(`Teacher with ID ${id} not found`);
+      HandleErrors.handleHttpExceptions(new Error("Docente no encontrado"));
     }
     return teacher;
   }
@@ -69,7 +64,7 @@ export class TeacherService {
       });
       return updatedTeacher;
     } catch (error) {
-      throw new BadRequestException(`Error updating teacher: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 
@@ -78,7 +73,7 @@ export class TeacherService {
       await this.prismaService.teacher.delete({ where: { id } });
       return { message: `Teacher #${id} deleted successfully` };
     } catch (error) {
-      throw new BadRequestException(`Error deleting teacher: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 }

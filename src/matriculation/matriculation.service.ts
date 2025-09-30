@@ -3,6 +3,8 @@ import { CreateMatriculationDto } from './dto/create-matriculation.dto';
 import { UpdateMatriculationDto } from './dto/update-matriculation.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@generated';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
+
 
 @Injectable()
 export class MatriculationService {
@@ -35,7 +37,7 @@ export class MatriculationService {
       })
       return matriculation;
     }catch (error) {
-      throw new BadRequestException(error.message);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -51,7 +53,7 @@ export class MatriculationService {
     })
 
     if (!matriculation) {
-      throw new BadRequestException('Matriculation not found')
+      HandleErrors.handleHttpExceptions(new Error('Matriculation not found'))
     }
 
     return matriculation;
@@ -74,7 +76,7 @@ export class MatriculationService {
       })
       return matriculation;
     }catch (error) {
-      throw new BadRequestException(error.message);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -87,7 +89,7 @@ export class MatriculationService {
       })
       return matriculation;
     }catch (error) {
-      throw new BadRequestException(error.message);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 }

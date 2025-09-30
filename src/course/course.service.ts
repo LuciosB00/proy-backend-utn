@@ -3,6 +3,7 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@generated';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class CourseService {
@@ -21,7 +22,7 @@ export class CourseService {
       })
 
       if (existCareer) {
-        throw new BadRequestException('Course with this name already exists');
+        throw new BadRequestException('Materia con este nombre ya existe');
       }
 
       return await prisma.course.create({
@@ -33,7 +34,7 @@ export class CourseService {
         }
       })
     } catch (error) {
-      throw new BadRequestException('Error creating course:' + error.message);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -46,7 +47,7 @@ export class CourseService {
       where: { id },
     });
     if (!course) {
-      throw new BadRequestException(`Course with ID ${id} not found`);
+      HandleErrors.handleHttpExceptions(new Error(`Materia no encontrada`))
     }
     return course;
   }
@@ -58,7 +59,7 @@ export class CourseService {
       });
 
       if (!course) {
-        throw new BadRequestException(`Course with ID ${id} not found`);
+        throw new BadRequestException(`Materia no encontrada`);
       }
 
       return await this.prisma.course.update({
@@ -66,7 +67,7 @@ export class CourseService {
         data: updateCourseDto,
       });
     } catch (error) {
-      throw new BadRequestException('Error updating course:' + error.message);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -77,14 +78,14 @@ export class CourseService {
       });
 
       if (!course) {
-        throw new BadRequestException(`Course with ID ${id} not found`);
+        throw new BadRequestException(`Materia no encontrada`);
       }
 
       return await this.prisma.course.delete({
         where: { id },
       });
     } catch (error) {
-      throw new BadRequestException('Error deleting course:' + error.message);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 }

@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@generated';
 import { BadRequestException } from '@nestjs/common';
 import { readFile } from 'fs';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class QualificationService {
@@ -24,7 +25,7 @@ export class QualificationService {
       })
 
       if (existingQualification) {
-        throw new Error('Qualification already exists')
+        throw new BadRequestException('Calificacion ya existe')
       }
 
       const qualification = await prisma.qualification.create({
@@ -39,7 +40,7 @@ export class QualificationService {
 
       return qualification;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -55,7 +56,7 @@ export class QualificationService {
     });
 
     if (!qualification) {
-      throw new BadRequestException('Qualification not found')
+      HandleErrors.handleHttpExceptions(new Error('Calificacion no encontrada'))
     }
 
     return qualification;
@@ -81,7 +82,7 @@ export class QualificationService {
       })
       return updatedQualification;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -94,7 +95,7 @@ export class QualificationService {
       })
       return { message: 'Qualification deleted successfully' };
     } catch (error) {
-      throw new BadRequestException(error.message)
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 }

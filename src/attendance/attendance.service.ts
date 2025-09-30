@@ -3,6 +3,7 @@ import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@generated';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class AttendanceService {
@@ -23,14 +24,14 @@ export class AttendanceService {
       })
 
       if (existingAttendance) {
-        throw new Error('Attendance already exists');
+        throw new Error('Asistencia ya existe')
       }
 
       return await prisma.attendance.create({
         data: createAttendanceDto,
       });
     } catch (error) {
-      throw new Error(`Failed to create attendance: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -44,7 +45,7 @@ export class AttendanceService {
     });
 
     if (!attendance) {
-      throw new Error('Attendance not found');
+      HandleErrors.handleHttpExceptions(new Error('Asistencia no encontrada'))
     }
 
     return attendance;
@@ -58,7 +59,7 @@ export class AttendanceService {
       });
       return updatedAttendance;
     } catch (error) {
-      throw new Error(`Failed to update attendance: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 
@@ -69,7 +70,7 @@ export class AttendanceService {
       });
       return { message: 'Attendance deleted successfully' };
     } catch (error) {
-      throw new Error(`Failed to delete attendance: ${error.message}`);
+      HandleErrors.handleHttpExceptions(error)
     }
   }
 }

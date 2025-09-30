@@ -3,6 +3,7 @@ import { CreateQualificationStateDto } from './dto/create-qualification-state.dt
 import { UpdateQualificationStateDto } from './dto/update-qualification-state.dto';
 import { Prisma } from 'generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class QualificationStateService {
@@ -21,7 +22,7 @@ export class QualificationStateService {
       });
 
       if (existingQualificationState) {
-        throw new ConflictException('QualificationState already exists');
+        throw new ConflictException('Estado de calificacion ya existe');
       }
 
       const qualificationState = await (prisma.qualificationState.create as any)({
@@ -33,7 +34,7 @@ export class QualificationStateService {
 
       return qualificationState;
     } catch (error) {
-      throw new Error(error.message);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 
@@ -48,7 +49,7 @@ export class QualificationStateService {
       },
     });
     if (!qualificationState) {
-      throw new Error('QualificationState not found');
+      HandleErrors.handleHttpExceptions(new Error('Estado de la calificacion no encontrado'))
     }
     return qualificationState;
   }
@@ -70,7 +71,7 @@ export class QualificationStateService {
       })
       return updatedQualificationState;
     } catch (error) {
-      throw new Error(error.message);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 
@@ -83,7 +84,7 @@ export class QualificationStateService {
       })
       return { message: 'QualificationState deleted' };
     } catch (error) {
-      throw new Error(error.message);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 }

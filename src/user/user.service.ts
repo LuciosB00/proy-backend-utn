@@ -3,10 +3,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hashSync } from 'bcrypt';
+import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {} 
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAll(order: 'asc' | 'desc' = 'asc') {
     try {
@@ -25,23 +26,21 @@ export class UserService {
         },
       });
     } catch (error) {
-      this.handleError(error);
+      HandleErrors.handleHttpExceptions(error);
     }
-  }  
+  }
 
   async create(createUserDto: CreateUserDto) {
     try {
       const { email, password } = createUserDto;
 
       if (!email || !password) {
-        throw new Error('Email and password are required');
+        throw new Error('Email y contraseña son ncesarios')
       }
 
       if (createUserDto.password.length < 6) {
-        throw new Error('Password must be at least 6 characters long');
+        throw new Error('Contraseña debe tener al menos 6 caracteres')
       }
-
-      
 
       const findUser = await this.prisma.user.findFirst({
         where: {
@@ -51,7 +50,7 @@ export class UserService {
       });
 
       if (findUser) {
-        throw new ConflictException('El usuario ya existe');
+        throw new Error('El usuario ya existe')
       }
 
       return await this.prisma.user.create({
@@ -68,7 +67,7 @@ export class UserService {
 
       });
     } catch (error) {
-      this.handleError(error);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
   //verifico si ese email  existe , delete null, que no haya duplicados 
@@ -89,18 +88,18 @@ export class UserService {
         }
       });
     } catch (error) {
-      this.handleError(error);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
-      let  { password, ...rest } = updateUserDto;
+      let { password, ...rest } = updateUserDto;
 
       const findUser = await this.findOne(id);
 
       if (!findUser) {
-        throw new Error('User not found');
+        throw new Error('Usuario no encontrado');
       }
 
       if (password?.trim()) {
@@ -123,20 +122,8 @@ export class UserService {
         }
       });
     } catch (error) {
-      this.handleError(error);
-
+      HandleErrors.handleHttpExceptions(error);
     }
-  }
-
-  handleError(error: any) {
-    console.log(error);
-
-    if (error instanceof ConflictException) {
-      throw new ConflictException(error.message);
-    } else {
-      throw new InternalServerErrorException('Error creating user');
-    }
-
   }
 
   async remove(id: string) {
@@ -156,7 +143,7 @@ export class UserService {
         }
       })
     } catch (error) {
-      this.handleError(error);
+      HandleErrors.handleHttpExceptions(error);
     }
   }
 }
