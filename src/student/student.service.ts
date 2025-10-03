@@ -52,7 +52,25 @@ export class StudentService {
 
   async findAll() {
     try {
-      return await this.prismaService.student.findMany();
+      return await this.prismaService.student.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          dni: true,
+          registrationState: true,
+          phone: true,
+          dateBirth: true,
+          address: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
     } catch (error) {
       HandleErrors.handleHttpExceptions(error);
     }
