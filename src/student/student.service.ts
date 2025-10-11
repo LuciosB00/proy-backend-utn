@@ -8,13 +8,9 @@ import { HandleErrors } from "src/common/exceptions/handle-errors";
 @Injectable()
 export class StudentService {
   constructor(
-    private readonly prismaService: PrismaService,
-  ) { }
+    private readonly prismaService: PrismaService,) { }
 
-  async create(
-    createStudentDto: CreateStudentDto,
-    tx: Prisma.TransactionClient,
-  ) {
+  async create(createStudentDto: CreateStudentDto, tx: Prisma.TransactionClient,) {
     try {
       const prisma = tx;
 

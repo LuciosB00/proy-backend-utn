@@ -8,13 +8,17 @@ import { HandleErrors } from "src/common/exceptions/handle-errors";
 
 @Injectable()
 export class TeacherService {
-  constructor(private readonly prismaService: PrismaService, private readonly userService: UserService) {}
+  constructor(private readonly prismaService: PrismaService,) { }
 
-  async create(createTeacherDto: CreateTeacherDto, tx?: Prisma.TransactionClient) {
+  async create(createTeacherDto: CreateTeacherDto, tx: Prisma.TransactionClient) {
     try {
-      const prisma = tx || this.prismaService;
+      const prisma = tx;
 
-      const exists = await this.userService.findOne(createTeacherDto.userId);
+      const exists = await prisma.user.findUnique({
+        where: {
+          id: createTeacherDto.userId,
+        },
+      });
 
       if (!exists) {
         throw new Error("Usuario no encontrado");
