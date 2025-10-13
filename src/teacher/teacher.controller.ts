@@ -8,11 +8,6 @@ import { UpdateTeacherDto } from './dto/update-teacher.dto';
 export class TeacherController {
   constructor(private readonly teacherService: TeacherService) {}
 
-  @Post()
-  create(@Body() createTeacherDto: CreateTeacherDto) {
-    return this.teacherService.create(createTeacherDto);
-  }
-
   @Get()
   findAll() {
     return this.teacherService.findAll();
