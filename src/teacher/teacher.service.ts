@@ -47,9 +47,29 @@ export class TeacherService {
   }
 
   async findAll() {
-    return await this.prismaService.teacher.findMany();
+    try {
+      return await this.prismaService.teacher.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          dni: true,
+          phone: true,
+          dateBirth: true,
+          address: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      HandleErrors.handleHttpExceptions(error);
+    }
   }
-
   async findOne(id: string) {
     const teacher = await this.prismaService.teacher.findUnique({
       where: { id, deletedAt: null },
