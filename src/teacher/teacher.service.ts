@@ -70,6 +70,7 @@ export class TeacherService {
       HandleErrors.handleHttpExceptions(error);
     }
   }
+
   async findOne(id: string) {
     const teacher = await this.prismaService.teacher.findUnique({
       where: { id, deletedAt: null },

@@ -7,6 +7,7 @@ import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class CourseService {
+  prismaService: any;
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createCourseDto: CreateCourseDto, tx?: Prisma.TransactionClient) {
@@ -39,7 +40,26 @@ export class CourseService {
   }
 
   async findAll() {
-    return await this.prisma.course.findMany();
+    try {
+      return await this.prismaService.course.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          year: true,
+          fourMonth: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              year: true
+            },
+          },
+        },
+      });
+    } catch (error) {
+      HandleErrors.handleHttpExceptions(error);
+    }
   }
 
   async findOne(id: string) {
