@@ -13,7 +13,7 @@ export class CourseService {
     try {
       const prisma = tx || this.prisma;
 
-      const { careerId, name, year, fourthMonth } = createCourseDto;
+      const { careerId, name, year } = createCourseDto;
 
       const existCareer = await prisma.course.findFirst({
         where: {
@@ -30,7 +30,7 @@ export class CourseService {
           careerId: careerId,
           name: name,
           year: year,
-          fourMonth: fourthMonth
+          fourMonth: createCourseDto.fourMonth
         }
       })
     } catch (error) {
@@ -38,21 +38,28 @@ export class CourseService {
     }
   }
 
-  async findAll() {
-    try {
-      return await this.prisma.course.findMany({
-        where: { deletedAt: null },
-        select: {
-          id: true,
-          name: true,
-          year: true,
-          fourMonth: true,
+async findAll() {
+  try {
+    return await this.prisma.course.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        year: true,
+        fourMonth: true,
+        career: {
+          select: {
+            id: true,
+            name: true,
+          },
         },
-      });
-    } catch (error) {
-      HandleErrors.handleHttpExceptions(error);
-    }
+      },
+    });
+  } catch (error) {
+    HandleErrors.handleHttpExceptions(error);
   }
+}
+
 
   async findOne(id: string) {
     const course = await this.prisma.course.findUnique({

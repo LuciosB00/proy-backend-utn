@@ -1,17 +1,16 @@
-import { FourMonth } from "@generated";
-import { IsEnum, IsNumber, IsString, IsUUID, Length } from "class-validator";
+import { IsEnum, IsNumber, IsString, IsUUID } from "class-validator";
+import { FourMonth } from "@prisma/client"; // Enum generado por Prisma
 
 export class CreateCourseDto {
-    @IsUUID()
-    careerId: string;
+  @IsUUID()
+  careerId: string;
 
-    @IsString()
-    @Length(5, 50)
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsNumber()
-    year: number;
+  @IsNumber()
+  year: number;
 
-    @IsEnum(FourMonth)
-    fourthMonth: FourMonth;
+  @IsEnum(FourMonth)
+  fourMonth: FourMonth;
 }
