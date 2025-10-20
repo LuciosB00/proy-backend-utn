@@ -7,7 +7,6 @@ import { HandleErrors } from 'src/common/exceptions/handle-errors';
 
 @Injectable()
 export class CareerService {
-  prismaService: any;
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createCareerDto: CreateCareerDto, tx?: Prisma.TransactionClient) {
@@ -40,7 +39,7 @@ export class CareerService {
 
   async findAll() {
     try {
-      return await this.prismaService.course.findMany({
+      return await this.prisma.career.findMany({
         where: { deletedAt: null },
         select: {
           id: true,
@@ -53,6 +52,7 @@ export class CareerService {
       HandleErrors.handleHttpExceptions(error);
     }
   }
+
 
   async findOne(id: string) {
     const carrer = this.prisma.career.findUnique({
@@ -90,7 +90,7 @@ export class CareerService {
 
   async remove(id: string) {
     try {
-      await this.prismaService.carrer.delete({ where: { id } });
+      await this.prisma.career.delete({ where: { id } });
       return { message: `Carrer #${id} deleted successfully` };
     } catch (error) {
       HandleErrors.handleHttpExceptions(error)
