@@ -39,7 +39,19 @@ export class CareerService {
   }
 
   async findAll() {
-    return await this.prisma.career.findMany();
+    try {
+      return await this.prismaService.course.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          title: true,
+        },
+      });
+    } catch (error) {
+      HandleErrors.handleHttpExceptions(error);
+    }
   }
 
   async findOne(id: string) {

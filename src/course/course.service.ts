@@ -48,13 +48,6 @@ export class CourseService {
           name: true,
           year: true,
           fourMonth: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              year: true
-            },
-          },
         },
       });
     } catch (error) {
