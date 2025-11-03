@@ -30,7 +30,7 @@ enum RegistrationState {
 enum CourseState {
   PROMOTED
   REGULAR
-  FREE
+  FREE  
 }
 
 enum FourMonth {

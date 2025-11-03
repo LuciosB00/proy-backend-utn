@@ -97,7 +97,7 @@ export class AuthService {
         },
       })) as Partial<User>;
 
-      if (!user) {
+      if (!user || !user.id || !user.role) {
         throw new UnauthorizedException("Credenciales inválidas");
       }
 
@@ -109,7 +109,7 @@ export class AuthService {
 
       return {
         ...user,
-        token: this.getJwtToken({ id: user.id! }),
+        token: this.getJwtToken({ id: user.id!, role: user.role! }),
       };
     } catch (error) {
       HandleErrors.handleHttpExceptions(error)
