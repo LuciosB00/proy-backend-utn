@@ -2,8 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateMatriculationDto } from './dto/create-matriculation.dto';
 import { UpdateMatriculationDto } from './dto/update-matriculation.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@generated';
+import { Prisma, RegistrationState } from '@generated';
 import { HandleErrors } from 'src/common/exceptions/handle-errors';
+import { CourseState } from '@prisma/client';
 
 
 @Injectable()
@@ -41,22 +42,37 @@ export class MatriculationService {
     }
   }
 
-  async findAll() {
-    return await this.prisma.matriculation.findMany();
+  async findAll(registrationState?: RegistrationState, courseState?: CourseState, studentId?: string) {
+    try {
+      return await this.prisma.matriculation.findMany({
+        where: {
+          registrationState,
+          courseState,
+          studentId,
+          deletedAt: null,
+        },
+      });
+    }catch (error) {
+      HandleErrors.handleHttpExceptions(error)
+    }
   }
 
   async findOne(id: string) {
-    const matriculation = await this.prisma.matriculation.findUnique({
-      where: {
-        id: id,
-      },
-    })
+    try {
+      const matriculation = await this.prisma.matriculation.findUnique({
+        where: {
+          id: id,
+        },
+      })
 
-    if (!matriculation) {
-      HandleErrors.handleHttpExceptions(new Error('Matriculation not found'))
+      if (!matriculation) {
+        HandleErrors.handleHttpExceptions(new Error('Matriculation not found'))
+      }
+
+      return matriculation;
+    }catch (error) {
+      HandleErrors.handleHttpExceptions(error)
     }
-
-    return matriculation;
   }
 
   async update(id: string, updateMatriculationDto: UpdateMatriculationDto) {

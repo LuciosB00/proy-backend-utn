@@ -1,4 +1,5 @@
 import { AttendanceStatus } from "@generated";
+import { Type } from "class-transformer";
 import { IsDate, IsEnum, IsUUID } from "class-validator";
 
 export class CreateAttendanceDto {
@@ -8,6 +9,7 @@ export class CreateAttendanceDto {
     @IsUUID()
     courseId: string;
 
+    @Type(() => Date)
     @IsDate()
     attendanceDate: Date;
 

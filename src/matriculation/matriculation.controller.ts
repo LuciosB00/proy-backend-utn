@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { MatriculationService } from './matriculation.service';
 import { CreateMatriculationDto } from './dto/create-matriculation.dto';
 import { UpdateMatriculationDto } from './dto/update-matriculation.dto';
+import { RegistrationState } from '@generated';
+import { CourseState } from '@prisma/client';
 
 @Controller('matriculation')
 export class MatriculationController {
@@ -13,8 +15,8 @@ export class MatriculationController {
   }
 
   @Get()
-  findAll() {
-    return this.matriculationService.findAll();
+  findAll(@Query('registrationState') registrationState?: RegistrationState, @Query('courseState') courseState?: CourseState, @Query('studentId') studentId?: string) {
+    return this.matriculationService.findAll(registrationState, courseState, studentId);
   }
 
   @Get(':id')

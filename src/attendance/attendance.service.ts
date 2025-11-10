@@ -35,8 +35,14 @@ export class AttendanceService {
     }
   }
 
-  async findAll() {
-    return await this.prisma.attendance.findMany();
+  async findAll(studentId?: string, courseId?: string) {
+    return await this.prisma.attendance.findMany({
+      where: {
+        studentId: studentId,
+        courseId: courseId,
+        deletedAt: null,
+      },
+    });
   }
 
   async findOne(id: string) {
