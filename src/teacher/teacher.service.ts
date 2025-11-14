@@ -56,6 +56,17 @@ export class TeacherService {
           phone: true,
           dateBirth: true,
           address: true,
+          courses: {
+            select: {
+              id: true,
+              name: true,
+              year: true,
+              fourMonth: true,
+              career: {
+                select: { id: true, name: true },
+              },
+            },
+          },
           user: {
             select: {
               id: true,
@@ -83,9 +94,18 @@ export class TeacherService {
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
     try {
+      const { courseIds, ...rest } = updateTeacherDto;
+
+      const data: any = { ...rest };
+      if (courseIds) {
+        data.courses = {
+          set: courseIds.map((cid) => ({ id: cid })),
+        };
+      }
+
       const updatedTeacher = await this.prismaService.teacher.update({
         where: { id },
-        data: updateTeacherDto,
+        data,
       });
       return updatedTeacher;
     } catch (error) {
