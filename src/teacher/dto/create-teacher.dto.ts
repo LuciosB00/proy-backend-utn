@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
+import { IsDate, IsNumber, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
 
 export class CreateTeacherDto {
     @IsUUID()
@@ -11,7 +11,7 @@ export class CreateTeacherDto {
 
     @IsNumber()
     @Length(8, 8)
-    @ValidateIf((value) => value!== null)
+    @ValidateIf((value) => value !== null)
     dni: number;
 
     @IsOptional()
@@ -22,5 +22,5 @@ export class CreateTeacherDto {
     @IsOptional()
     @IsString()
     @Length(10, 11)
-    address?: string; 
+    address?: string;
 }
